@@ -1,90 +1,65 @@
 # from pudb import set_trace; set_trace()
 from typing import List
-from itertools import combinations
-from collections import defaultdict
-from functools import lru_cache
 
 
-class CombinationIterator1:
-    """Cheating solution, because we are using itertools.combinations"""
+class Solution1:
+    def flip(self, A: List[int], k: int) -> None:
+        f = 0
+        b = k
+        while f < b:
+            A[f], A[b] = A[b], A[f]
+            f += 1
+            b -= 1
 
-    def __init__(self, characters: str, combinationLength: int):
-        self.comb = combinations(characters, combinationLength)
-        self.next_val = ''
-
-    def next(self) -> str:
-        if self.next_val:
-            temp = self.next_val
-            self.next_val = ''
-            return temp
-        else:
-            return ''.join(next(self.comb))
-
-    def hasNext(self) -> bool:
-        if not self.next_val:
-            self.next_val = ''.join(next(self.comb, ['']))
-        return self.next_val
-
-
-class CombinationIterator2:
-    """Custom implemented combination"""
-
-    def __init__(self, characters: str, combinationLength: int):
-        self.comb = self.combination(characters, combinationLength)
-        self.idx = 0
-
-    @lru_cache(maxsize=None)
-    def combination(self, characters, length):
-        if length == 1:
-            return list(characters)
-        else:
-            res = []
-            for i in range(len(characters) - length + 1):
-                res += [characters[i] + comb for comb in self.combination(characters[i + 1:], length - 1)]
-            return res
-
-    def next(self) -> str:
-        self.idx += 1
-        return self.comb[self.idx - 1]
-
-    def hasNext(self) -> bool:
-        return self.idx < len(self.comb)
+    def pancakeSort(self, A: List[int]) -> List[int]:
+        """Most generic solution"""
+        res = []
+        for i in range(len(A) - 1, -1, -1):
+            idx = A[:i + 1].index(max(A[:i + 1]))
+            if idx != i:
+                res += [idx + 1, i + 1]
+                self.flip(A, idx)
+                self.flip(A, i)
+        return res
 
 
-class CombinationIterator3:
-    """Use bitmask"""
+class Solution2:
+    def flip(self, k: int) -> None:
+        if k <= 0:
+            return
+        f = 0
+        b = k
+        while f < b:
+            self.A[f], self.A[b] = self.A[b], self.A[f]
+            f += 1
+            b -= 1
+        self.res.append(k + 1)
 
-    def __init__(self, characters: str, combinationLength: int):
-        self.comb = self.combination(characters, combinationLength)
-        self.idx = 0
+    def swap(self, i: int, j: int) -> None:
+        """i and j are indices"""
+        self.flip(j)
+        self.flip(j - i)
+        self.flip(j - i - 1)
+        self.flip(j - i - 2)
+        self.flip(j - i - 1)
+        self.flip(j)
 
-    def combination(self, characters, length):
-        comb = []
-        ch_len = len(characters)
-        for mask in range(2**ch_len - 1, 0, -1):  # bitmask 111, 110, 101, etc.
-            binmask = format(mask, f'0{ch_len}b')
-            c = ''
-            for b, ch in zip(binmask, characters):
-                if b == '1':
-                    c += ch
-            if len(c) == length:
-                comb.append(c)
-        return comb
-
-    def next(self) -> str:
-        self.idx += 1
-        return self.comb[self.idx - 1]
-
-    def hasNext(self) -> bool:
-        return self.idx < len(self.comb)
+    def pancakeSort(self, A: List[int]) -> List[int]:
+        """Interesting solution to swap numbers at given position without
+        changing the order of the remaining.
+        """
+        self.A = A
+        self.res = []
+        i = 0
+        while i < len(A):
+            if A[i] != i + 1:
+                self.swap(i, A[i] - 1) if A[i] > i + 1 else self.swap(A[i] - 1, i)
+                print(self.A)
+            else:
+                i += 1
+        return self.res
 
 
-ci = CombinationIterator3('gkosu', 3)
-print(ci.comb)
-# print(ci.next())
-# print(ci.hasNext())
-# print(ci.next())
-# print(ci.hasNext())
-# print(ci.next())
-# print(ci.hasNext())
-
+sol = Solution2()
+A = [4, 1, 5, 3, 2]
+print(sol.pancakeSort(A))
