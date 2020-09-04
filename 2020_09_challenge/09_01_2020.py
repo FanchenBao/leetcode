@@ -21,7 +21,7 @@ class Solution1:
 
 class Solution2:
     def full_permute(
-        self, 
+        self,
         lst: List[int],
         idx: int,
         permutes: List[List[int]],
@@ -35,16 +35,6 @@ class Solution2:
             self.full_permute(lst, idx + 1, permutes)
             lst[i], lst[idx] = lst[idx], lst[i]  # backtrack
         return
-
-    def parse_time(self, time_str: str) -> bool:
-        h1, h2, _, m1, m2 = list(time_str)
-        if h1 > '2':
-            return False
-        if h1 == '2' and h2 > '3':
-            return False
-        if m1 > '5':
-            return False
-        return True
 
     def largestTimeFromDigits(self, A: List[int]) -> str:
         """Hand-craft permutation and time string parser"""
