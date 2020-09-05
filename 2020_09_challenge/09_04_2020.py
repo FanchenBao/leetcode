@@ -47,7 +47,6 @@ class Solution3:
         for i, le in enumerate(S):
             ranges[le] = ranges.get(le, [i, i])
             ranges[le][1] = i
-                
         partitions = []
         for s, e in sorted(ranges.values(), key=lambda x: x[0]):
             if partitions:
@@ -58,7 +57,6 @@ class Solution3:
                     partitions.append([s, e])
             else:
                 partitions.append([s, e])
-            print(partitions)
         return [e - s + 1 for s, e in partitions]
 
 
