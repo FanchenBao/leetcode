@@ -42,10 +42,28 @@ class Solution2:
         return size + 1
 
 
+class Solution3:
+    def firstMissingPositive(self, nums: List[int]) -> int:
+        """Constant space.
+
+        The bucket has to be on the same nums. We will do hops. e.g. given nums
+        [2, 1, 5], we check nums[0], which is 2. We will put value 2 in
+        position nums[2 - 1] => nums[1]. But nums[1] contains a value already.
+        We need to also check where to put the original value of nums[1], in
+        this case 1, to its proper poisition nums[1 - 1] => nums[0]
+        """
+        size = len(nums)
+        for i in range(size):
+            n = nums[i]
+            while 0 < n <= size and n != nums[n - 1]:  # n need to be reassigned
+                nums[n - 1], n = n, nums[n - 1]
+        for i in range(size):
+            if nums[i] != i + 1:
+                return i + 1
+        return size + 1
 
 
-
-sol = Solution2()
+sol = Solution3()
 tests = [
     ([1, 2, 0], 3),
     ([3, 4, -1, 1], 2),
