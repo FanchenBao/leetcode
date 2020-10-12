@@ -43,7 +43,19 @@ class Solution1:
 
 class Solution2:
     def removeDuplicateLetters(self, s: str) -> str:
-        """Greedy approach"""
+        """Greedy approach.
+
+        The idea of this approach is that the final answer must start with one
+        of the smalest latters in s. So we create a list of unique letters in
+        s in ascending order, and try one by one as our starting letter. Say
+        we pick the smallest letter as the starting one and we choose the first
+        appearance of such letter (this is the greedy part). That means we must
+        discard all the letters ahead of it. And since we already pick the
+        letter, we also need to eliminate the leeter in all the letters after
+        it. Now that our first letter is secured, we subject the remaining
+        letters through the same search process. This continues until we have
+        an answer.
+        """
         for le in sorted(set(s)):
             next_s = s[s.index(le):]
             if set(next_s) == set(s):
