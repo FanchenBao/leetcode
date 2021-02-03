@@ -25,25 +25,29 @@ class Solution2:
     def detectCycle(self, head: ListNode) -> ListNode:
         """This is O(1)
 
-        Mathematics proof: suppose it takes S steps for slow (one step at a
-        time) and fast (two steps at a time) to meet,
-        suppose there are a steps before the cycle start, suppose there are b
-        steps in the cycle, and suppose slow and fast meets at kth step within
-        the circle.
+        Mathematics proof: suppose there are m steps before the start of the
+        cycle. Suppose there are n steps between the start of the cycle and the
+        point where the slow and fast nodes first meet. Suppose the number of
+        steps between where the fast and slow nodes meet and the start of the
+        cycle is p (i.e. the cycle size l = p + n). Suppose k is the number of
+        times the fast node has cycled.
 
-        We have:
+        2(m + n) = m + n + kl = m + n + k(p + n)
 
-        S - a = mb + k
-        2S - a = nb + k
+        We get m = k(p + n) - n = p + (k - 1)l
 
-        Thus S = (n - m)b
+        In other words, the number of steps from the root node to the start of
+        the cycle is the same as the number of steps from where the slow and
+        fast nodes first meet to the start of the cycle plus a multiple of the
+        cycle size. This means, if we place the slow node back at the root, and
+        let the slow and fast both move one step at a time. They will eventually
+        meet at the start of the cycle (note that the fast node might have to
+        go through the cycle multiple times, but the final meeting place is
+        always the start of the cycle).
 
-        Consider the number of steps before we can reach the cycle start from
-        the point where slow and fast meet: b - k, and consider a = S - mb - k
-        = (n - 2m)b - k. We discover that (b - k) mod b = ((n - 2m)b - k) mod b
-        This means if we set a node at the meeting node, and set another node
-        at the head, and have them move both at one step at a time, they will
-        eventually meet at the cycle start.
+        A special case is when k = 1, which means the fast node initially has
+        only gotten through the cycle once. This can help us visialize the more
+        generic situation where k > 1.
         """
         slow, fast = head, head
         while slow and fast and fast.next:
