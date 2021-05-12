@@ -8,7 +8,9 @@ class NumMatrix1:
         self.matrix = matrix
 
     def sumRegion(self, row1: int, col1: int, row2: int, col2: int) -> int:
-        """Very straightforward, sum the rows first, and then sum the columns.
+        """LeetCode 304
+
+        Very straightforward, sum the rows first, and then sum the columns.
 
         O(NM), 1524 ms, 15% ranking.
 
