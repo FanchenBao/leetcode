@@ -62,6 +62,7 @@ class Solution2:
         return res
 
 
+<<<<<<< HEAD
 class Solution3:
     def maximumUniqueSubarray(self, nums: List[int]) -> int:
         """O(N) version of Solution1
