@@ -68,12 +68,41 @@ class Solution2:
                     helper(pot_lst, num_right_p + 1, num_left_p)
                     pot_lst.pop()
 
-
         helper([], 0, 0)
         return res
 
 
-sol = Solution2()
+class Solution3:
+    def generateParenthesis(self, n: int) -> List[str]:
+        """This is the solution from:
+
+        https://leetcode.com/problems/generate-parentheses/discuss/1276049/Python-recursive-solution-with-dp-explained
+
+        The key insight is that all well-formed parentheses follow the same
+        pattern of `(left)right`, where left and right are themselves well-formed
+        parentheses. With that, we can use DP to solve this problem, where we
+        record dp[i] as a list of well-formed parenthesis with i number of pairs.
+        We iterate through 1 pair all the way to n pairs. For each pair, we go
+        through all possible number of left-right combinations. Since the set
+        up of `(left)right` is not symmetrical, we will not encounter duplicates
+        if left and right are swapped.
+
+        Run time is a Catalan number, which I don't want to know what it is at
+        the moment.
+
+        32 ms.
+        """
+        dp = [[] for _ in range(n + 1)]
+        dp[0] = ['']
+        for k in range(1, n + 1):
+            for i in range(k):
+                for left in dp[i]:
+                    for right in dp[k - 1 - i]:
+                        dp[k].append(f'({left}){right}')
+        return dp[-1]
+
+
+sol = Solution3()
 tests = [
     (3, ['((()))', '(()())', '(())()', '()(())', '()()()']),
     (1, ['()']),
