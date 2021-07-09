@@ -66,7 +66,7 @@ class SegNode:
 def merge(v1: Tuple, v2: Tuple) -> Tuple:
     """Merge two (length, count) of adjacent ranges. Note that the length is the
     LIS from the beginning of the input numbers till some number within the
-    range denoted by the node thta holds the tuple. Length is NOT the length of
+    range denoted by the node that holds the tuple. Length is NOT the length of
     LIS contained within the range denoted by the node.
 
     For instance, for a range [3, 6], if the length is 6, that means the LIS
