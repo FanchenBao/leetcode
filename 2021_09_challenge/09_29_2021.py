@@ -8,7 +8,7 @@ class ListNode:
         self.val = val
         self.next = next
 
-class Solution:
+class Solution1:
     def splitListToParts(self, head: Optional[ListNode], k: int) -> List[Optional[ListNode]]:
         """LeetCode 725
 
@@ -67,10 +67,37 @@ class Solution:
         return res
 
 
-sol = Solution()
+class Solution2:
+    def splitListToParts(self, head: Optional[ListNode], k: int) -> List[Optional[ListNode]]:
+        """Official solution. It directly computes the small size partition and
+        number of large parititons by counting the number of elements in the
+        linked list. I don't know why I never thought about doing it this way.
+        It's way simpler than the two pointer method.
+        """
+        N = 0
+        node = head
+        while node:
+            node = node.next
+            N += 1
+        width, remain = divmod(N, k)
+
+        res = []
+        cur = head
+        for i in range(k):
+            front = cur
+            for _ in range(width + int(i < remain) - 1):
+                if cur:
+                    cur = cur.next
+            if cur:
+                cur.next, cur = None, cur.next
+            res.append(front)
+        return res
+
+
+sol = Solution2()
 tests = [
-    # ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 3, [[1, 2, 3, 4], [5, 6, 7], [8, 9, 10]]),
-    # ([1, 2, 3], 5, [[1], [2], [3], [], []]),
+    ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 3, [[1, 2, 3, 4], [5, 6, 7], [8, 9, 10]]),
+    ([1, 2, 3], 5, [[1], [2], [3], [], []]),
     ([], 3, [[], [], []]),
     ([1], 3, [[1], [], []]),
 ]
