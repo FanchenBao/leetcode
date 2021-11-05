@@ -10,22 +10,34 @@ class TreeNode:
         self.right = right
 
 
-class Solution:
-    def sumOfLeftLeaves(self, root: Optional[TreeNode], is_left: int = 0) -> int:
-        """LeetCode 404
+class Solution1:
+    def preorderTraversal(self, root: Optional[TreeNode]) -> List[int]:
+        """LeetCode 144
 
-        DFS.
-
-        O(N), 32 ms, 80% ranking.
+        32 ms, 68% ranking.
         """
         if not root:
-            return 0
-        if not root.left and not root.right:
-            return root.val * is_left
-        return self.sumOfLeftLeaves(root.left, 1) + self.sumOfLeftLeaves(root.right, 0)
-        
+            return []
+        left = self.preorderTraversal(root.left)
+        right = self.preorderTraversal(root.right)
+        return [root.val] + left + right
 
 
+class Solution2:
+    def preorderTraversal(self, root: Optional[TreeNode]) -> List[int]:
+        """
+        28 ms, 87% ranking.
+        """
+        res = []
+
+        def dfs(node: Optional[TreeNode]) -> None:
+            if node:
+                res.append(node.val)
+                dfs(node.left)
+                dfs(node.right)
+
+        dfs(root)
+        return res
 
 # sol = Solution3()
 # tests = [
