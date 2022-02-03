@@ -1,9 +1,9 @@
 # from pudb import set_trace; set_trace()
 from typing import List
-from collections import defaultdict, deque
+from collections import defaultdict, deque, Counter
 
 
-class Solution:
+class Solution1:
     def groupStrings(self, words: List[str]) -> List[int]:
         """The idea is quite simple. First build a graph of all the words, and
         then use BFS to find each group and group size. The difficult part is
@@ -63,7 +63,125 @@ class Solution:
         return res
 
 
-sol = Solution()
+class DSU:
+    """Disjoint Set Union.
+
+    It supports union and find in log(N) time. It has rank and path compression.
+    Shamelessly copied from:
+
+    https://leetcode.com/problems/swim-in-rising-water/discuss/1284843/Python-2-solutions%3A-Union-FindHeap-explained
+
+    Update 06/25/2021: Improved functionality by returning boolean value in
+    self.union function. Reference:
+
+    https://leetcode.com/problems/redundant-connection/solution/
+    """
+
+    def __init__(self, N: int):
+        self.par = list(range(N))
+        self.rnk = [0] * N
+
+    def find(self, x: int) -> int:
+        if self.par[x] != x:
+            self.par[x] = self.find(self.par[x])
+        return self.par[x]
+
+    def union(self, x: int, y: int) -> bool:
+        xr, yr = self.find(x), self.find(y)
+        if xr != yr:
+            if self.rnk[xr] < self.rnk[yr]:
+                self.par[xr] = yr
+            elif self.rnk[xr] > self.rnk[yr]:
+                self.par[yr] = xr
+            else:
+                self.par[yr] = xr
+                self.rnk[xr] += 1
+            return True
+        return False  # x, y already in the same union
+
+
+class Solution2:
+    def groupStrings(self, words: List[str]) -> List[int]:
+        """Same idea to build up the graph, but we use Union Find to quickly
+        identify which words form a group.
+        
+        O(N * 26 * 26), 6640 ms, 25% ranking.
+
+        UPDATE: we don't have to consider add a letter, because adding a letter
+        for the current word is equivalent to minus a letter for the other
+        word. Thus, considering minus letter is sufficient.
+        """
+        N = len(words)
+        # Convert words into bitmap
+        bitmap = defaultdict(list)
+        for i, w in enumerate(words):
+            bitmap[sum(1 << (ord(le) - 97) for le in w)].append(i)
+        dsu = DSU(N)
+        for bm in bitmap:
+            zero_pos, one_pos = [], []
+            idx = bitmap[bm][0]
+            for i in range(26):
+                if (bm >> i) & 1:  # remove one letter
+                    one_pos.append(i)
+                    for j in bitmap.get(bm ^ 1 << i, []):
+                        dsu.union(idx, j)
+                else:  # add one letter
+                    zero_pos.append(i)
+            for p in zero_pos:  # replace letter
+                for q in one_pos:
+                    for j in bitmap.get(bm ^ 1 << q | 1 << p, []):
+                        dsu.union(idx, j)
+            for j in bitmap[bm][1:]:
+                dsu.union(idx, j)
+        for i in range(N):  # Must compress path again
+            dsu.find(i)
+        counter = Counter(dsu.par)
+        return [len(counter), max(counter.values())]
+
+
+class Solution3:
+    def groupStrings(self, words: List[str]) -> List[int]:
+        """This is from a comment in lee215's solution.
+
+        Ref: https://leetcode.com/problems/groups-of-strings/discuss/1730305/Python-Bitmask-+-UnionFind-+-Explanation/1243452
+
+        The idea is that given a word, we remove each and every letter. After
+        a letter is removed, we have a new bitmask. If we have recorded the
+        previous word that also has the same bitmask either after removing
+        a letter or not removing any letters, then the two words shall be
+        unioned. This is the key. When the current word removes a letter and it
+        matches with some other word without having to remove a letter, this
+        is apparently valid. On the other hand, if the current word removes a
+        letter and it matches with some other word that also removes a letter,
+        then these two words also are connected, because they differ by only
+        one letter. This can significantly reduce the time to find connections
+        between replacement.
+
+        3434 ms, 77% ranking.
+        """
+        N = len(words)
+        dsu = DSU(N)
+        mask_dict = {}  # record the index of the first word that shows a certain bitmask
+        for i, w in enumerate(words):
+            mask = sum(1 << (ord(le) - 97) for le in w)
+            if mask in mask_dict:  # there have been repeats
+                dsu.union(i, mask_dict[mask])
+            else:
+                mask_dict[mask] = i
+            for j in range(26):
+                if mask >> j & 1:
+                    rm_mask = mask ^ 1 << j  # remove a letter
+                    if rm_mask in mask_dict:  # key step!!
+                        dsu.union(i, mask_dict[rm_mask])
+                    else:
+                        mask_dict[rm_mask] = i
+        for i in range(N):  # Must compress path again
+            dsu.find(i)
+        counter = Counter(dsu.par)
+        return [len(counter), max(counter.values())]
+
+
+sol = Solution3()
 tests = [
     (["a","b","ab","cde"], [2, 3]),
     (["a","ab","abc"], [1, 3]),
