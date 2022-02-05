@@ -8,13 +8,14 @@ from collections import defaultdict
 
 class Solution1:
     def findTargetSumWays(self, nums: List[int], target: int) -> int:
-        """TLE"""
+        """My recursion with memoization"""
         N = len(nums)
         nums.sort()
         i = 0
         while i < N and nums[i] == 0:  # the appearance of 0 causes edge case
             i += 1
 
+        @lru_cache(maxsize=None)
         def dfs(idx: int, s: int, tgt: int) -> int:
             if idx == N:
                 return 0
@@ -107,8 +108,52 @@ class Solution3:
         return res * (1 << i)
 
 
-sol = Solution3()
+class Solution4:
+    def findTargetSumWays(self, nums: List[int], target: int) -> int:
+        """Recursion with memo from the official solution.
+        
+        O(SN), where N = len(nums) and S is all possible sum values the nums
+        list can take. It is at most 2000 because the sum of nums does not
+        exceed 1000 (i.e. the possible sums range from -1000 to 1000)
+
+        353 ms, 65% ranking.
+        """
+        N = len(nums)
+        
+        @lru_cache(maxsize=None)
+        def helper(start: int, cur_sum: int) -> int:
+            if start == N:
+                return 1 if cur_sum == target else 0
+            return helper(start + 1, cur_sum + nums[start]) + helper(start + 1, cur_sum - nums[start])
+
+        return helper(0, 0)
+
+
+class Solution5:
+    def findTargetSumWays(self, nums: List[int], target: int) -> int:
+        """Bottom up version of the same DP as in Solution4.
+        
+        O(SN), 1077 ms, 6% ranking.
+        """
+        N = len(nums)
+        max_sum = max(abs(target), sum(nums))
+        dp = [0] * (2 * max_sum + 1)
+        dp[nums[0]] += 1
+        dp[-nums[0]] += 1
+        for n in nums[1:]:
+            temp = [0] * (2 * max_sum + 1)
+            for j in range(-max_sum, max_sum + 1):
+                if j - n >= -max_sum:
+                    temp[j] += dp[j - n]
+                if j + n <= max_sum:
+                    temp[j] += dp[j + n]
+            dp = temp
+        return dp[target]
+
+
+sol = Solution5()
 tests = [
+    ([1], 2, 0),
     ([1,1,1,1,1], 3, 5),
     ([1], 1, 1),
     ([1, 0], 1, 2),
