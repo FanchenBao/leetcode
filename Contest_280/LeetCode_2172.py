@@ -1,11 +1,11 @@
 # from pudb import set_trace; set_trace()
 from typing import List
-from collections import Counter, deque
+from collections import Counter, defaultdict
 import heapq
+from functools import lru_cache
 
 
-
-class Solution:
+class Solution1:
     def maximumANDSum(self, nums: List[int], numSlots: int) -> int:
         """TLE
         """
@@ -43,7 +43,41 @@ class Solution:
         return self.res
 
 
-sol = Solution()
+class Solution2:
+    def maximumANDSum(self, nums: List[int], numSlots: int) -> int:
+        """What a problem!
+
+        Once I know the trick of using a trinary bit to represent the state of
+        each slot, as per lee215's explanation
+
+        https://leetcode.com/problems/maximum-and-sum-of-array/discuss/1766824/JavaC%2B%2BPython-DP-Solution
+
+        the problem becomes very straightforward. Since can create an integer
+        using the trinary bits, we can represent the state of all the slots as
+        an integer. Then we simply iterate through all possible configurations
+        of assigning a number to a slot, using DP, and then find the max.
+
+        The trick that I use to find the value of the ith bit from the right in
+        a trinary mask is mask // (3**(i - 1)) % 3. This is the numerical way
+        of expressing mask >> (i - 1) & 1 for a binary system.
+
+        O(N * 3^N) where N = len(numSlots), 1107 ms, 50% ranking.
+        """
+        @lru_cache(maxsize=None)
+        def dp(idx: int, mask: int) -> int:
+            if idx < 0:
+                return 0
+            res = 0
+            for slot in range(1, numSlots + 1):
+                if (mask // (3**(slot - 1)) % 3) < 2:
+                    res = max(res, dp(idx - 1, mask + 3**(slot - 1)) + (nums[idx] & slot))
+            return res
+
+        return dp(len(nums) - 1, 0)
+
+
+
+sol = Solution2()
 tests = [
     ([1, 2, 3, 4, 5, 6], 3, 9),
     ([1, 3, 10, 4, 7, 1], 9, 24),
