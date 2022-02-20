@@ -4,8 +4,8 @@ from collections import Counter
 import math
 
 
-class Solution:
-    def coutPairs(self, nums: List[int], k: int) -> int:
+class Solution1:
+    def countPairs(self, nums: List[int], k: int) -> int:
         counter = Counter()
         kcount = 0
         for n in nums:
@@ -25,7 +25,23 @@ class Solution:
         return res + kcount * (len(nums) - kcount) + kcount * (kcount - 1) // 2
 
 
-sol = Solution()
+class Solution2:
+    def countPairs(self, nums: List[int], k: int) -> int:
+        """Same GCD idea but less verbose.
+
+        Ref: https://leetcode.com/problems/count-array-pairs-divisible-by-k/discuss/1784721/Count-GCDs
+        """
+        counter = Counter()
+        res = 0
+        for n in nums:
+            g1 = math.gcd(n, k)
+            for g2, cnt in counter.items():
+                res += 0 if g1 * g2 % k else cnt
+            counter[g1] += 1
+        return res
+
+
+sol = Solution2()
 tests = [
     ([1, 2, 3, 4, 5], 2, 7),
     ([1, 2, 3, 4], 5, 0),
