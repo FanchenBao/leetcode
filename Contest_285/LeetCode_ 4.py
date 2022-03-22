@@ -1,54 +1,106 @@
 # from pudb import set_trace; set_trace()
 from typing import List
-from collections import defaultdict
-import math
-import heapq
+
+
+class TreeNode:
+    def __init__(self):
+        self.l_cont = ['', 0]
+        self.r_cont = ['', 0]
+        self.max_cont = 0
+        self.left = None
+        self.right = None
+
+
+class SegmentTree:
+    def __init__(self, s: str):
+        self.lst = list(s)
+        self.root = self.build(0, len(s) - 1)
+
+    def merge_left_right_child(self, node: TreeNode, lrange: int, rrange: int) -> None:
+        is_l_all_same = node.left.l_cont[0] == node.left.r_cont[0] and node.left.l_cont[1] == node.left.r_cont[1] == lrange
+        is_r_all_same = node.right.l_cont[0] == node.right.r_cont[0] and node.right.l_cont[1] == node.right.r_cont[1] == rrange
+        # left all the same, right all the same
+        if is_l_all_same and is_r_all_same:
+            if node.left.r_cont[0] != node.right.l_cont[0]:
+                cross = 0
+                node.l_cont = node.left.l_cont[:]
+                node.r_cont = node.right.r_cont[:]
+            else:
+                cross = node.left.r_cont[1] + node.right.l_cont[1]
+                node.l_cont = [node.left.l_cont[0], cross]
+                node.r_cont = [node.right.r_cont[0], cross]
+        elif is_l_all_same and not is_r_all_same:
+            if node.left.r_cont[0] != node.right.l_cont[0]:
+                cross = 0
+                node.l_cont = node.left.l_cont[:]
+            else:
+                cross = node.left.r_cont[1] + node.right.l_cont[1]
+                node.l_cont = [node.left.l_cont[0], cross]
+            node.r_cont = node.right.r_cont[:]
+        elif not is_l_all_same and is_r_all_same:
+            if node.left.r_cont[0] != node.right.l_cont[0]:
+                cross = 0
+                node.r_cont = node.right.r_cont[:]
+            else:
+                cross = node.left.r_cont[1] + node.right.l_cont[1]
+                node.r_cont = [node.right.r_cont[0], cross]
+            node.l_cont = node.left.l_cont[:]
+        else:  # left not all the same, right not all the same
+            if node.left.r_cont[0] != node.right.l_cont[0]:
+                cross = 0
+            else:
+                cross = node.left.r_cont[1] + node.right.l_cont[1]
+            node.l_cont = node.left.l_cont[:]
+            node.r_cont = node.right.r_cont[:]
+        node.max_cont = max(node.left.max_cont, node.right.max_cont, cross)
+
+    def build(self, l: int, r: int) -> TreeNode:
+        node = TreeNode()
+        if l == r:
+            node.l_cont = [self.lst[l], 1]
+            node.r_cont = [self.lst[r], 1]
+            node.max_cont = 1
+        else:
+            mid = (l + r) // 2
+            node.left, node.right = self.build(l, mid), self.build(mid + 1, r)
+            self.merge_left_right_child(node, mid - l + 1, r - mid)
+        return node
+
+    def update(self, node: TreeNode, idx: int, new_le: str, l: int, r: int) -> None:
+        if idx == l == r:
+            self.lst[idx] = new_le
+            node.l_cont[0] = new_le
+            node.r_cont[0] = new_le
+        else:
+            mid = (l + r) // 2
+            if idx > mid:
+                self.update(node.right, idx, new_le, mid + 1, r)
+            else:
+                self.update(node.left, idx, new_le, l, mid)
+            self.merge_left_right_child(node, mid - l + 1, r - mid)
 
 
 class Solution:
-    def minimumWeight(self, n: int, edges: List[List[int]], src1: int, src2: int, dest: int) -> int:
-        """Can't solve this, because my dumbass didn't realize that finding
-        the path with the min weight is Dijkstra. Below I will reproduce the
-        popular solution of three Dijkstras (ref: https://leetcode.com/problems/minimum-weighted-subgraph-with-the-required-paths/discuss/1844130/Python-3-Dijkstras-explained.)
-
-        However, this solution (https://leetcode.com/problems/minimum-weighted-subgraph-with-the-required-paths/discuss/1844479/Simultaneous-Dijkstra-beats-100-(only-1-dijkstra))
-        uses only one Dijkstra.
-
-        O(ElogV + N) as according to Wikipedia. 3249 ms, 71% ranking.
+    def longestRepeating(self, s: str, queryCharacters: str, queryIndices: List[int]) -> List[int]:
+        """TLE.
         """
-        # first produce two graphs, one in the original order, and the other
-        # reversed order
-        G1, G2 = defaultdict(list), defaultdict(list)
-        for f, t, w in edges:
-            G1[f].append((t, w))
-            G2[t].append((f, w))  # reverse
-
-        def Dijkstra(graph, start) -> List[int]:
-            queue, weights = [(0, start)], {}
-            while queue:
-                w, node = heapq.heappop(queue)
-                if node not in weights:  # weights always record the min weight
-                    weights[node] = w
-                    for child, weight in graph.get(node, []):
-                        heapq.heappush(queue, (w + weight, child))
-            return [weights.get(i, math.inf) for i in range(n)]
-
-        s1toall = Dijkstra(G1, src1)
-        s2toall = Dijkstra(G1, src2)
-        dstoall = Dijkstra(G2, dest)
-
-        res = min(s1toall[i] + s2toall[i] + dstoall[i] for i in range(n))
-        return res if res < math.inf else -1
+        tree = SegmentTree(s)
+        res = []
+        for ch, idx in zip(queryCharacters, queryIndices):
+            tree.update(tree.root, idx, ch, 0, len(s) - 1)
+            res.append(tree.root.max_cont)
+        return res
 
 
 sol = Solution()
 tests = [
-    (6, [[0,2,2],[0,5,6],[1,0,3],[1,4,5],[2,1,1],[2,3,3],[2,3,4],[3,4,2],[4,5,1]], 0, 1, 5, 9),
-    (3, [[0,1,1],[2,1,1]], 0, 1, 2, -1),
+    ("babacc", "bcb", [1,3,3], [3, 3, 4]),
+    ("abyzz", "aa", [2,1], [2, 3]),
+    ("geuqjmt", "bgemoegklm", [3,4,2,6,5,6,5,4,3,2], [1,1,2,2,2,2,2,2,2,1]),
 ]
 
-for i, (n, edges, src1, src2, dest, ans) in enumerate(tests):
-    res = sol.minimumWeight(n, edges, src1, src2, dest)
+for i, (s, queryCharacters, queryIndices, ans) in enumerate(tests):
+    res = sol.longestRepeating(s, queryCharacters, queryIndices)
     if res == ans:
         print(f'Test {i}: PASS')
     else:
