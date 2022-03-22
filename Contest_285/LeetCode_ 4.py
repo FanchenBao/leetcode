@@ -17,48 +17,18 @@ class SegmentTree:
         self.root = self.build(0, len(s) - 1)
 
     def merge_left_right_child(self, node: TreeNode, lrange: int, rrange: int) -> None:
-        is_l_all_same = node.left.l_cont[0] == node.left.r_cont[0] and node.left.l_cont[1] == node.left.r_cont[1] == lrange
-        is_r_all_same = node.right.l_cont[0] == node.right.r_cont[0] and node.right.l_cont[1] == node.right.r_cont[1] == rrange
-        # left all the same, right all the same
-        if is_l_all_same and is_r_all_same:
-            if node.left.r_cont[0] != node.right.l_cont[0]:
-                cross = 0
-                node.l_cont = node.left.l_cont[:]
-                node.r_cont = node.right.r_cont[:]
-            else:
-                cross = node.left.r_cont[1] + node.right.l_cont[1]
-                node.l_cont = [node.left.l_cont[0], cross]
-                node.r_cont = [node.right.r_cont[0], cross]
-        elif is_l_all_same and not is_r_all_same:
-            if node.left.r_cont[0] != node.right.l_cont[0]:
-                cross = 0
-                node.l_cont = node.left.l_cont[:]
-            else:
-                cross = node.left.r_cont[1] + node.right.l_cont[1]
-                node.l_cont = [node.left.l_cont[0], cross]
-            node.r_cont = node.right.r_cont[:]
-        elif not is_l_all_same and is_r_all_same:
-            if node.left.r_cont[0] != node.right.l_cont[0]:
-                cross = 0
-                node.r_cont = node.right.r_cont[:]
-            else:
-                cross = node.left.r_cont[1] + node.right.l_cont[1]
-                node.r_cont = [node.right.r_cont[0], cross]
-            node.l_cont = node.left.l_cont[:]
-        else:  # left not all the same, right not all the same
-            if node.left.r_cont[0] != node.right.l_cont[0]:
-                cross = 0
-            else:
-                cross = node.left.r_cont[1] + node.right.l_cont[1]
-            node.l_cont = node.left.l_cont[:]
-            node.r_cont = node.right.r_cont[:]
+        cross = (node.left.r_cont[0] == node.right.l_cont[0]) * (node.left.r_cont[1] + node.right.l_cont[1])
+        node.l_cont[0] = node.left.l_cont[0]
+        node.r_cont[0] = node.right.r_cont[0]
+        node.l_cont[1] = cross if cross and node.left.l_cont[0] == node.left.r_cont[0] and node.left.l_cont[1] == node.left.r_cont[1] == lrange else node.left.l_cont[1]
+        node.r_cont[1] = cross if cross and node.right.l_cont[0] == node.right.r_cont[0] and node.right.l_cont[1] == node.right.r_cont[1] == rrange else node.right.r_cont[1]
         node.max_cont = max(node.left.max_cont, node.right.max_cont, cross)
 
     def build(self, l: int, r: int) -> TreeNode:
         node = TreeNode()
         if l == r:
-            node.l_cont = [self.lst[l], 1]
-            node.r_cont = [self.lst[r], 1]
+            node.l_cont[0], node.l_cont[1] = self.lst[l], 1
+            node.r_cont[0], node.r_cont[1] = self.lst[r], 1
             node.max_cont = 1
         else:
             mid = (l + r) // 2
@@ -82,8 +52,6 @@ class SegmentTree:
 
 class Solution:
     def longestRepeating(self, s: str, queryCharacters: str, queryIndices: List[int]) -> List[int]:
-        """TLE.
-        """
         tree = SegmentTree(s)
         res = []
         for ch, idx in zip(queryCharacters, queryIndices):
