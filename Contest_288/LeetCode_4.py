@@ -2,31 +2,29 @@
 from typing import List
 from collections import Counter
 import math
+from itertools import accumulate
+from bisect import bisect_left
 
 
 class Solution:
     def maximumBeauty(self, flowers: List[int], newFlowers: int, target: int, full: int, partial: int) -> int:
-        counter = Counter(flowers)
-        uniqs = [0] + sorted(counter) + [math.inf]
-        lo, hi = 1, len(uniqs) - 2
-        while uniqs[hi] >= target:
-            hi -= 1
-        while lo < hi:
-            unit_inc_full = full / (target - uniqs[hi])
-            unit_inc_partial = partial / counter[uniqs[lo]]
-            if unit_inc_full >= unit_inc_partial and newFlowers >= target - uniqs[hi]:
-                newFlowers -= target - uniqs[hi]
-                hi -= 1
-            elif unit_inc_partial > unit_inc_full and newFlowers >= couter[uniqs[lo]]:
-                newFlowers -= counter[uniqs[lo]]
-                uniqs[lo] += 1
-                if uniqs[lo + 1] == uniqs[lo]:
-                    counter[uniqs[lo + 1]] += counter[uniqs[lo]]
-                    lo += 1
-            else:
+        flowers.sort()
+        num_full = 0
+        j = len(flowers) - 1
+        while flowers[j] >= target:
+            num_full += 1
+            j -= 1
+        presum = list(accumulate(flowers))
+        for add_full in range(j + 2):
+            full_needed = target * add_full - (presum[j] - presum[-1 - i])
+            flowers_remain = newFlowers - full_needed
+            if flowers_remain < 0:
                 break
-        return full * (len(uniqs) - hi - 2) + partial * uniqs[lo - 1]
-
+            lo, hi = uniqs[0], target - 1
+            while lo < hi:
+                mid = (lo + hi + 1) // 2
+                idx = bisect_left(uniqs, mid)
+                partial_needed = 0 if idx == 0 else mid *  - presum[idx - 1]
 
 
         
@@ -34,16 +32,12 @@ class Solution:
 
 sol = Solution()
 tests = [
-    ([1,1,2,3,5], 1),
-    ([1,1,2,2,3,3], 2),
-    ([1,2,3,3,4,4,5,5,6], 1),
-    ([1], 1),
-    ([], 0),
-    ([1,1,1,1,1], 5),
+    # ([1,3,1,1], 7, 6, 12, 1, 14),
+    ([2,4,5,3], 10, 5, 2, 6, 30),
 ]
 
-for i, (nums, ans) in enumerate(tests):
-    res = sol.minDeletion(nums)
+for i, (flowers, newFlowers, target, full, partial, ans) in enumerate(tests):
+    res = sol.maximumBeauty(flowers, newFlowers, target, full, partial)
     if res == ans:
         print(f'Test {i}: PASS')
     else:
