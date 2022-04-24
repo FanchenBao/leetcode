@@ -39,6 +39,9 @@ class Solution2:
         Each time pattern[0] is encountered, we can produce 0 new patterns. But
         each time pattern[1] is encountered, we can produce the current cnt0
         number of new patterns.
+
+        Ref: https://leetcode.com/problems/maximize-number-of-subsequences-in-a-string/discuss/1863900/JavaC%2B%2BPython-Straight-Forward-Solution
+        381 ms, faster than 58.54%
         """
         res, cnt0, cnt1 = 0, 0, 0
         for t in text:
