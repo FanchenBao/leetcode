@@ -5,6 +5,10 @@ import math
 
 class Solution:
     def countLatticePoints(self, circles: List[List[int]]) -> int:
+        """Most naive way to solve this problem. Works for the contest.
+
+        6801 ms, faster than 37.63%
+        """
         lats = set()
         for x, y, r in circles:
             for i in range(x - r, x + r + 1):
