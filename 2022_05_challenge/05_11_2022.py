@@ -45,7 +45,6 @@ class Solution3:
         return math.comb(n + 4, 4)
         
         
-
 sol = Solution3()
 tests = [
     (1, 5),

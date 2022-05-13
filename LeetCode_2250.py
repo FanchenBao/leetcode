@@ -2,19 +2,33 @@
 from typing import List
 from bisect import bisect_left
 import math
+from collections import defaultdict
 
 
 class Solution:
     def countRectangles(self, rectangles: List[List[int]], points: List[List[int]]) -> List[int]:
-        xs = sorted((rec[0], i) for i, rec in enumerate(rectangles))
-        ys = sorted((rec[1], i) for i, rec in enumerate(rectangles))
+        """We have to take a hint. And the hint is there are at most 100 unique
+        y values for the rectangles. Ya, I didn't read the question
+        specification carefully. Since there are so few ys, it is possible to
+        list all xs for each y in ascending order. Then we binary search on y
+        first to identify which ys are likely to hold a point. Then, we iterate
+        through all lists of xs of each y and use another binary search to see
+        how many xs are able to hold the point.
+
+        N be the length of rectangles, M be the length of points
+        O(NlogN + MlogN), 2475 ms, faster than 77.11%
+        """
+        rectangles.sort(key=lambda rec: (rec[1], rec[0]))
+        tab = defaultdict(list)
+        for l, h in rectangles:
+            tab[h].append(l)
+        ys = list(tab.keys())
         res = []
         for x, y in points:
-            idx_xs = bisect_left(xs, (x, -math.inf))
-            set_x = set(xs[j][1] for j in range(idx_xs, len(xs)))
-            idx_ys = bisect_left(ys, (y, -math.inf))
-            set_y = set(ys[j][1] for j in range(idx_ys, len(ys)))
-            res.append(len(set.intersection(set_x, set_y)))
+            yi = bisect_left(ys, y)
+            res.append(0)
+            for j in range(yi, len(ys)):
+                res[-1] += len(tab[ys[j]]) - bisect_left(tab[ys[j]], x)
         return res
         
 
