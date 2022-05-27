@@ -49,7 +49,7 @@ class Solution2:
         provide a better chance for future extension while not modifying the
         number of values on the stack at the moment.
 
-        O(NlogN)
+        O(NlogN), 1574 ms, faster than 55.93%
         """
         envelopes.sort(key=lambda tup: (tup[0], -tup[1]))
         stack = [-1]
