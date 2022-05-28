@@ -46,6 +46,14 @@ class Solution1:
 
 class Solution2:
     def minimumWhiteTiles(self, floor: str, numCarpets: int, carpetLen: int) -> int:
+        """Inspired by lee215
+
+        Ref: https://leetcode.com/problems/minimum-white-tiles-after-covering-with-carpets/discuss/1863955/JavaC%2B%2BPython-DP-solution
+
+        DP, but the idea is to directly find the answer. dp(i, j) returns the
+        min number of white tiles NOT covered up til floor[i] with j number of
+        carpets.
+        """
 
         @lru_cache(maxsize=None)
         def dp(idx: int, carp: int) -> int:
@@ -53,7 +61,7 @@ class Solution2:
                 return 0
             return min(
                 int(floor[idx]) + dp(idx - 1, carp),  # don't cover
-                dp(idx - carpetLen, carp - 1) if carp else math.inf
+                dp(idx - carpetLen, carp - 1) if carp else math.inf,  # cover
             )
 
         return dp(len(floor) - 1, numCarpets)
