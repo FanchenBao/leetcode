@@ -4,8 +4,20 @@ from bisect import bisect_right
 from collections import defaultdict
 
 
-class Solution:
+class Solution1:
     def countUnguarded(self, m: int, n: int, guards: List[List[int]], walls: List[List[int]]) -> int:
+        """This is a very complex method. We use binary search to find the
+        closest left and right guards to the current cell (if they exist). Then
+        we binary search on the wall to check whether there is a wall in
+        between a cell and its left guard (or right guard). As long as one of
+        the guard has a clear view of the cell, the cell is covered.
+
+        This solution requires sorted collection for all guards and walls for
+        each row or col index. Lots of binary search then follow. It's long
+        and complex, and doesn't perform any better than the brute force method
+
+        4186 ms, 33% ranking.
+        """
         gs_r = defaultdict(list)
         ws_r = defaultdict(list)
         gs_c = defaultdict(list)
@@ -77,7 +89,45 @@ class Solution:
         return res
 
 
-sol = Solution()
+class Solution2:
+    def countUnguarded(self, m: int, n: int, guards: List[List[int]], walls: List[List[int]]) -> int:
+        """Brute force, but mark guards and walls first, so that whenever a
+        guard or wall is encountered, the current iteration ends.
+
+        Ref: https://leetcode.com/problems/count-unguarded-cells-in-the-grid/discuss/1994554/Easy-C%2B%2B-code-with-explanation
+
+        3882 ms, faster than 43.23%
+        """
+        grid = [[0] * n for _ in range(m)]
+        for x, y in guards:
+            grid[x][y] = 2        
+        for x, y in walls:
+            grid[x][y] = -1
+        for x, y in guards:
+            # go right
+            for j in range(y + 1, n):
+                if grid[x][j] == 2 or grid[x][j] == -1:
+                    break
+                grid[x][j] = 1
+            # go left
+            for j in range(y - 1, -1, -1):
+                if grid[x][j] == 2 or grid[x][j] == -1:
+                    break
+                grid[x][j] = 1
+            # go up
+            for i in range(x - 1, -1, -1):
+                if grid[i][y] == 2 or grid[i][y] == -1:
+                    break
+                grid[i][y] = 1
+            # go down
+            for i in range(x + 1, m):
+                if grid[i][y] == 2 or grid[i][y] == -1:
+                    break
+                grid[i][y] = 1
+        return sum(row.count(0) for row in grid)
+
+
+sol = Solution2()
 tests = [
     (4, 6,  [[0,0],[1,1],[2,3]],  [[0,1],[2,2],[1,4]], 7),
     (3, 3, [[1,1]],[[0,1],[1,0],[2,1],[1,2]], 4),
