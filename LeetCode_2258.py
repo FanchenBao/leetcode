@@ -1,9 +1,10 @@
 # from pudb import set_trace; set_trace()
 from typing import List
 import math
+from bisect import bisect_left, bisect_right
 
 
-class Solution:
+class Solution1:
     def maximumMinutes(self, grid: List[List[int]]) -> int:
         """We had the correct idea from yesterday (2022-05-30). In fact, our
         idea was exactly the same as the hints. But our initial implementation
@@ -76,7 +77,52 @@ class Solution:
         return -1 if lo < 0 else lo - 1 if lo < max_fire_tick else 10**9
 
 
-sol = Solution()
+class Solution2:
+    def maximumMinutes(self, grid: List[List[int]]) -> int:
+        M, N = len(grid), len(grid[0])
+        fires = [(i, j, 0) for i in range(M) for j in range(N) if grid[i][j] == 1]
+        inf = 10**10
+        for i in range(M):
+            for j in range(N):
+                if grid[i][j] != 0:
+                    grid[i][j] = 0
+                else:
+                    grid[i][j] = inf
+
+        def bfs(queue, visited):
+            while queue:
+                temp = []
+                for i, j, t in queue:
+                    visited[i][j] = t
+                    for di, dj in [(0, 1), (1, 0), (-1 ,0), (0, -1)]:
+                        ni, nj = i + di, j + dj
+                        if 0 <= ni < M and 0 <= nj < N and t + 1 < grid[ni][nj] and t + 1 < visited[ni][nj]:
+                            temp.append((ni, nj, t + 1))
+                queue = temp
+
+        def reach_safe_house(t):
+            """If can reach safe house, return False. If cannot reach safe house
+            return True.
+            """
+            visited = [[inf + 10] * N for _ in range(M)]
+            bfs([(0, 0, t)], visited)
+            return visited[-1][-1] > grid[-1][-1]
+
+
+        bfs(fires, grid)
+        grid[-1][-1] += 1  # edge case for the safe house, delay its burning.
+        # in bisect_left, if key() < x evaluates to True => lo = mid + 1, else
+        # hi = mid. In our case, we want reaching safe house => lo = mid + 1,
+        # else hi = mid. Thus, reaching safe house must make key() < x
+        # evaluates to True. If we set x = True, then reaching safe house leads
+        # to key() evaluates to False
+        # return bisect_left(range(10**9 + 1), True, key=reach_safe_house) - 1
+        return bisect_right(range(10**9 + 1), False, key=reach_safe_house) - 1
+
+
+
+
+sol = Solution2()
 tests = [
     ([[0,2,0,0,0,0,0],[0,0,0,2,2,1,0],[0,2,0,0,1,2,0],[0,0,2,2,2,0,2],[0,0,0,0,0,0,0]], 3),
     ([[0,0,0,0],[0,1,2,0],[0,2,0,0]], -1),
