@@ -79,6 +79,9 @@ class Solution1:
 
 class Solution2:
     def maximumMinutes(self, grid: List[List[int]]) -> int:
+        """Brilliant solution from lee215. The use of `key` in bisect is
+        extremely insightful. It's the new gem from Python 3.10
+        """
         M, N = len(grid), len(grid[0])
         fires = [(i, j, 0) for i in range(M) for j in range(N) if grid[i][j] == 1]
         inf = 10**10
@@ -116,8 +119,8 @@ class Solution2:
         # else hi = mid. Thus, reaching safe house must make key() < x
         # evaluates to True. If we set x = True, then reaching safe house leads
         # to key() evaluates to False
-        # return bisect_left(range(10**9 + 1), True, key=reach_safe_house) - 1
-        return bisect_right(range(10**9 + 1), False, key=reach_safe_house) - 1
+        return bisect_left(range(10**9 + 1), True, key=reach_safe_house) - 1
+        # return bisect_right(range(10**9 + 1), False, key=reach_safe_house) - 1
 
 
 
