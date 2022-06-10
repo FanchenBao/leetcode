@@ -85,8 +85,36 @@ class Solution2:
         return len(res_set)
 
 
+class Solution3:
+    def countDistinct(self, nums: List[int], k: int, p: int) -> int:
+        """Use Trie to mark unique subarrays. Honestly, this is not bad at all.
+        In fact, I would prefer this solution to rolling hash, because this is
+        always deterministic, whereas rolling hash always has a risk of
+        collision.
 
-sol = Solution2()
+        O(N^2), 579 ms, faster than 83.53%
+        """
+        trie = lambda: defaultdict(trie)
+        res = 0
+        root = trie()
+        root['c'] = 0
+        for i in range(len(nums)):
+            node = root
+            for j in range(i, len(nums)):
+                if node['c'] > k:
+                    break
+                if nums[j] in node:
+                    node = node[nums[j]]
+                else:
+                    cur_cnt = node['c']
+                    node = node[nums[j]]
+                    node['c'] = cur_cnt + int(nums[j] % p == 0)
+                    if node['c'] <= k:
+                        res += 1
+        return res
+
+
+sol = Solution3()
 tests = [
     ([2,3,3,2,2], 2, 2, 11),
     ([1,2,3,4], 4, 1, 10),
