@@ -60,17 +60,59 @@ class WordFilter:
         
 
 
+class WordFilter:
 
-sol = Solution()
-tests = [
-    ([4,2,1,3], [[1,2],[2,3],[3,4]]),
-    ([1,3,6,10,15], [[1,3]]),
-    ([3,8,-10,23,19,-4,-14,27], [[-14,-10],[19,23],[23,27]]),
-]
+    def __init__(self, words: List[str]):
+        self.trie_root = self.build_trie(words)
 
-for i, (arr, ans) in enumerate(tests):
-    res = sol.minimumAbsDifference(arr)
-    if res == ans:
-        print(f'Test {i}: PASS')
-    else:
-        print(f'Test {i}; Fail. Ans: {ans}, Res: {res}')
+    def build_trie(self, words):
+        word_idx = {word: i for i, word in enumerate(words)}
+        trie = lambda: defaultdict(trie)
+        root = trie()
+        for word, i in word_idx.items():
+            W = word + '&' + word
+            for p in range(len(word) + 1):
+                node = root
+                for q in range(p, len(W)):
+                    node = node[W[q]]
+                    if '#' not in node:
+                        node['#'] = []
+                    node['#'].append(i)
+        return root
+
+    def f(self, prefix: str, suffix: str) -> int:
+        """Instead of building two tries, we duplicate the word with a separater
+        in the middle. This way, we can produce trie for all possible suffix + 
+        '&' + prefix. During the search, we can search directly and there is
+        no need to compute intersection.
+
+        This might not seem much faster than the previous solution, but its
+        code is much simpler and easier to maintain.
+
+        1510 ms, faster than 67.60%
+        """
+        node = self.trie_root
+        for le in suffix + '&' + prefix:
+            node = node[le]
+        return -1 if '#' not in node else max(node['#'])
+        
+
+
+# Your WordFilter object will be instantiated and called as such:
+# obj = WordFilter(words)
+# param_1 = obj.f(prefix,suffix)
+
+
+# sol = Solution()
+# tests = [
+#     ([4,2,1,3], [[1,2],[2,3],[3,4]]),
+#     ([1,3,6,10,15], [[1,3]]),
+#     ([3,8,-10,23,19,-4,-14,27], [[-14,-10],[19,23],[23,27]]),
+# ]
+
+# for i, (arr, ans) in enumerate(tests):
+#     res = sol.minimumAbsDifference(arr)
+#     if res == ans:
+#         print(f'Test {i}: PASS')
+#     else:
+#         print(f'Test {i}; Fail. Ans: {ans}, Res: {res}')
