@@ -58,12 +58,44 @@ class Solution2:
         return res
 
 
-sol = Solution2()
+class Solution3:
+    def minDeletions(self, s: str) -> int:
+        """The sorting method, from the official solution.
+
+        Keep track of a max_freq_allowed value. Also sort the frequencies in
+        descending order. As we go through each freq, if it is smaller than the
+        max_freq_allowed, then we know this freq can be used directly, no
+        deletion needed. However, once we do that, we shall update the
+        max_freq_allowed to the current freq minus one. This is because all the
+        remaining freqs are smaller or equal to the current one. Thus, the only
+        possible max_freq_allowed is the current freq minus one.
+
+        If the current freq is larger than max_freq_allowed, then we must
+        delete until the current freq reaches max_freq_allowed. And then we
+        decrement max_freq_allowed.
+
+        O(NlogN), 164 ms, faster than 79.69%
+        """
+        nums = sorted(Counter(s).values(), reverse=True)
+        max_freq_allwoed = nums[0]
+        res = 0
+        for i, n in enumerate(nums):
+            if n <= max_freq_allwoed:
+                max_freq_allwoed = n - 1
+            else:
+                res += n - max_freq_allwoed
+                if max_freq_allwoed:
+                    max_freq_allwoed -= 1
+        return res
+
+
+sol = Solution3()
 tests = [
     ('aab', 0),
     ('aaabbbcc', 2),
     ('ceabaacb', 2),
     ("abcabc", 3),
+    ("gfngerrdgfjtgfbjytrgndsegrdfghdnhrtehrsaa", 18),
 ]
 
 for i, (s, ans) in enumerate(tests):
