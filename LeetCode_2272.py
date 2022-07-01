@@ -1,36 +1,38 @@
 # from pudb import set_trace; set_trace()
 from typing import List
-from collections import defaultdict
+from collections import defaultdict, Counter
+import heapq
 
 
 class Solution:
     def largestVariance(self, s: str) -> int:
-        uniques = set(s)
-        precount = {le: [0] for le in uniques}
-        indices = {le: [] for le in uniques}
+        counter = Counter(s)
+        if min(counter.values()) == 1:
+            return max(counter.values()) - 1
+        precount = defaultdict(lambda: [0] * (len(s) + 1))
         for i, le in enumerate(s):
-            for uniq in uniques:
-                if le == uniq:
-                    precount[uniq].append(1 + precount[uniq][-1])
-                else:
-                    precount[uniq].append(precount[uniq][-1])
-            indices[le].append(i)
-        tgt_le = min(indices, key=lambda le: len(indices[le]))
-        for i, idx in enumerate(indices[tgt_le]):
-            l = 0 if i == 0 else indices[tgt_le][i - 1]
+            for u in counter:
+                precount[u][i + 1] = precount[u][i] + int(u == le)
+        res = 0
+        indices = defaultdict(list)
+        for i in range(len(s)):
+            c = 1
+            for j in indices[s[i]][::-1]:
+                res = max(max(pc[i] - pc[j + 1] for pc in precount.values()) - c, res)
+                c += 1
+            res = max(max(pc[i] - c for pc in precount.values()), res)
+            indices[s[i]].append(i)
+        return res
 
 
-
-        
 sol = Solution()
 tests = [
-    ([4,2,1,3], [[1,2],[2,3],[3,4]]),
-    ([1,3,6,10,15], [[1,3]]),
-    ([3,8,-10,23,19,-4,-14,27], [[-14,-10],[19,23],[23,27]]),
+    ("aababbb", 3),
+    ("abcde", 0),
 ]
 
-for i, (arr, ans) in enumerate(tests):
-    res = sol.minimumAbsDifference(arr)
+for i, (s, ans) in enumerate(tests):
+    res = sol.largestVariance(s)
     if res == ans:
         print(f'Test {i}: PASS')
     else:
