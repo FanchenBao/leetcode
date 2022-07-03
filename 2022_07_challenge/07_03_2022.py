@@ -3,35 +3,63 @@ from typing import List
 import math
 
 
-class Solution:
-    def minimumAbsDifference(self, arr: List[int]) -> List[List[int]]:
-        """LeetCode 1200
+class Solution1:
+    def wiggleMaxLength(self, nums: List[int]) -> int:
+        """LeetCode 376
+        
+        Very naive DP solution. For each new n, we go through all the previous
+        numbers and check whether we can make a longer subsequence.
 
-        Sort and traverse adjacent pairs.
-
-        O(nlogn) 344 ms, 64% ranking.
+        O(N^2), 220 ms, faster than 17.85% 
         """
-        arr.sort()
-        min_abs = math.inf
-        res = []
-        for i in range(1, len(arr)):
-            if arr[i] - arr[i - 1] < min_abs:
-                res = [[arr[i - 1], arr[i]]]
-                min_abs = arr[i] - arr[i - 1]
-            elif arr[i] - arr[i - 1] == min_abs:
-                res.append([arr[i - 1], arr[i]])
+        N = len(nums)
+        dp = [[1, 1] for _ in range(N)]
+        res = 1
+        for i in range(1, N):
+            for j in range(i - 1, -1, -1):
+                if nums[i] > nums[j]:
+                    dp[i][0] = max(dp[i][0], dp[j][1] + 1)
+                elif nums[i] < nums[j]:
+                    dp[i][1] = max(dp[i][1], dp[j][0] + 1)
+            res = max(res, *dp[i])
         return res
 
 
-sol = Solution()
+class Solution2:
+    def wiggleMaxLength(self, nums: List[int]) -> int:
+        """This is from the official solution.
+
+        We use an up and down arrays. up[i] is the length of the longest wiggle
+        sequence from 0 to i that ends in an up trend. down[i] is the length of
+        the longest wiggle sequence that ends in a down trend.
+
+        O(N), 40 ms, faster than 84.95%
+
+        UPDATE: array is not necessary, because we only access the previous
+        value in up or down. So we can do it in O(1) space.
+        """
+        N = len(nums)
+        up, down = 1, 1
+        for i in range(1, N):
+            if nums[i] > nums[i - 1]:
+                up = down + 1
+            elif nums[i] < nums[i - 1]:
+                down = up + 1
+        return max(up, down)
+
+
+sol = Solution2()
 tests = [
-    ([4,2,1,3], [[1,2],[2,3],[3,4]]),
-    ([1,3,6,10,15], [[1,3]]),
-    ([3,8,-10,23,19,-4,-14,27], [[-14,-10],[19,23],[23,27]]),
+    ([1,7,4,9,2,5], 6),
+    ([1,17,5,10,13,15,10,5,16,8], 7),
+    ([1,2,3,4,5,6,7,8,9], 2),
+    ([1], 1),
+    ([1, 2], 2),
+    ([1, 1], 1),
 ]
 
-for i, (arr, ans) in enumerate(tests):
-    res = sol.minimumAbsDifference(arr)
+for i, (nums, ans) in enumerate(tests):
+    res = sol.wiggleMaxLength(nums)
     if res == ans:
         print(f'Test {i}: PASS')
     else:
