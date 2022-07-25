@@ -1,8 +1,9 @@
 # from pudb import set_trace; set_trace()
 from typing import List
+from itertools import accumulate
 
 
-class Solution:
+class Solution1:
     def totalStrength(self, strength: List[int]) -> int:
         """O(N^2), TLE
         """
@@ -21,6 +22,22 @@ class Solution:
             for k, v in dp.items():
                 res += k * v[1]
         return res
+
+
+class Solution2:
+    def totalStrength(self, strength: List[int]) -> int:
+        N = len(strength)
+        psum1 = [0] * N
+        psum1[-1] = strength[-1]
+        ps = strength[-1]
+        for i in range(N - 2, -1, -1):
+            ps += strength[i]
+            psum1[i] = psum1[i - 1] + ps
+        psum2 = list(accumulate(strenght))
+        ps = 0
+        dp = [0] * N
+        stack = []
+
 
 
 sol = Solution()

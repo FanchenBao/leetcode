@@ -136,7 +136,7 @@ class BIT:
         return res
 
 
-class Solution:
+class Solution1:
     def countSmaller(self, nums: List[int]) -> List[int]:
         """LeetCode 315
 
@@ -161,7 +161,56 @@ class Solution:
         return res
 
 
-sol = Solution()
+class Solution2:
+    def countSmaller(self, nums: List[int]) -> List[int]:
+        """This is a really really smart solution.
+
+        https://leetcode.com/problems/count-of-smaller-numbers-after-self/discuss/445769/merge-sort-CLEAR-simple-EXPLANATION-with-EXAMPLES-O(n-lg-n)
+
+        Use merge sort. Since at each level, we always merge the left half and
+        the right half, so naturally all the smaller values on the right half
+        can count towards the result of the values on the left half that are
+        bigger. And merge sort already does the comparison for us. All we need
+        to do is to keep track of the count of the values on the right that are
+        smaller.
+
+        O(NlogN), 3002 ms, faster than 81.89%
+        """
+        N = len(nums)
+        res = [0] * N
+        nums = [(n, i) for i, n in enumerate(nums)]
+
+        def merge_sort(lo: int, hi: int) -> List[int]:
+            if lo == hi:
+                return [nums[lo]]
+            mid = (lo + hi) // 2
+            sl, sr = merge_sort(lo, mid), merge_sort(mid + 1, hi)
+            c = 0
+            i = j = 0
+            r = []
+            while i < len(sl) and j < len(sr):
+                if sl[i][0] <= sr[j][0]:
+                    r.append(sl[i])
+                    res[sl[i][1]] += c
+                    i += 1
+                else:
+                    r.append(sr[j])
+                    j += 1
+                    c += 1
+            while i < len(sl):
+                r.append(sl[i])
+                res[sl[i][1]] += c
+                i += 1
+            while j < len(sr):
+                r.append(sr[j])
+                j += 1
+            return r
+
+        merge_sort(0, N - 1)
+        return res
+
+
+sol = Solution2()
 tests = [
     ([5,2,6,1], [2, 1, 1, 0]),
     ([-1], [0]),
