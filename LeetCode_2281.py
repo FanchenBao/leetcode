@@ -26,24 +26,77 @@ class Solution1:
 
 class Solution2:
     def totalStrength(self, strength: List[int]) -> int:
+        """Step 1: build a prefix sum that allows us to compute the sum of all
+        subarrays in range (i, j) that ends in strength[i] in O(1) time. To do
+        so go from right to left to build a prefix sum, which is called psum1
+        in the solution.
+
+        Step 2: build a regular prefix sum such that we can compute the sum of
+        range (i, j) in O(1). This is psum2.
+
+        With psum1 and psum2, the sum of all the subarrays in (i, j) ending in
+        strenght[i] can be expressed as:
+
+        psum1[i] - psum[j + 1] - (psum2[-1] - psum[j]) * (j - i + 1)
+
+        Step 3: we use a dp array to keep track of the contribution from
+        strength[i] that counts all the subarrays that end in strength[i]. We
+        can compute dp[i] from dp[i - 1] and a monotonic array.
+
+        For instance, let's say we have a monotonic array:
+
+            ..a0....a1...a2...
+
+        where a0 < a1 < a2. Now we have a3 coming in. It first pops everything
+        out until a2. All the elements between a3 and a2 can be computed using
+        the method in Step 1 and 2 to find their contribution based on a3.
+
+        Now, with a2, we know
+
+            dp[2] = a2 * (s1 + s2 + ...) + a1 * (s4 + s5 + ...) + a0 * (s6 + s7 + ...)
+
+        where s1, s2, ... are subarrays ending in a2, a1, and a0.
+
+        Let's also assume that the subarray between a2 and a3 (ending in a3)
+        has the sum s (this can be computed from psum2 in O(1)), then we can
+        write dp[3] = a2 * (s1 + s + s2 + s + ...) + a1 * (s4 + s + s5 + s + ...) + a0 * (s6 + s + s7 + s + ...)
+        = a2 * (s1 + s2 + ...) + a2 * c2 * s + a1 * (s4 + s5 + ...) + a1 * c1 * s + a0 * (s6 + s7 + ...) + a0 * c0 * s
+        = dp[2] + s * (a2 * c2 + a1 * c1 + a0 * c0 + ...)
+
+        Thus, we just need to use yet another prefix sum to keep track the
+        value of a2 * c2 + a1 * c1 + a0 * c0 + ... And this can be done in each
+        element of the monotonic array.
+
+        O(N) with 5 passes. 2891 ms, faster than 25.58%
+        """
         N = len(strength)
         psum1 = [0] * N
         psum1[-1] = strength[-1]
         ps = strength[-1]
         for i in range(N - 2, -1, -1):
             ps += strength[i]
-            psum1[i] = psum1[i - 1] + ps
-        psum2 = list(accumulate(strenght))
-        ps = 0
+            psum1[i] = psum1[i + 1] + ps
+        psum2 = list(accumulate(strength))
+        stack = [[-1, 0]]  # [index, presum of count * val]
         dp = [0] * N
-        stack = []
+        for i in range(N):
+            while stack[-1][0] >= 0 and strength[i] <= strength[stack[-1][0]]:
+                stack.pop()
+            # handle all the elements in between the current strength and the
+            # largest strength that is smaller than it
+            s_between = psum1[stack[-1][0] + 1] - (psum1[i + 1] if i + 1 < N else 0) - (psum2[-1] - psum2[i]) * (i - stack[-1][0])
+            dp[i] += s_between * strength[i]
+            if stack[-1][0] >= 0:
+                dp[i] += dp[stack[-1][0]] + (psum2[i] - psum2[stack[-1][0]]) * stack[-1][1]
+            stack.append([i, stack[-1][1] + (i - stack[-1][0]) * strength[i]])
+        return sum(dp) % 1000000007
 
 
-
-sol = Solution()
+sol = Solution2()
 tests = [
     ([1,3,1,2], 44),
     ([5,4,6], 213),
+    ([13,13,12,12,13,12], 8441)
 ]
 
 for i, (strength, ans) in enumerate(tests):
