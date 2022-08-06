@@ -1,28 +1,9 @@
 # from pudb import set_trace; set_trace()
 from typing import List
+from random import randint
 
 
-# class Solution:
-#     def totalSteps(self, nums: List[int]) -> int:
-#         stack = [(nums[0], 0)]
-#         res = steps = 0
-#         for i in range(1, len(nums)):
-#             if nums[i] >= stack[-1][0]:
-#                 stack.append((nums[i], i))
-#                 res = max(res, steps)
-#                 steps = 0
-#             elif stack[-1][1] + 1 == i or nums[i] < nums[i - 1] and nums[i - 1] >= nums[i - 2]:
-#                 res = max(res, steps)
-#                 steps = 1
-#             elif nums[i] < nums[i - 1] < nums[i - 2]:
-#                 continue
-#             else:
-#                 steps += 1
-
-#         return max(res, steps)
-
-
-class Solution:
+class Solution0:
     def totalSteps(self, nums: List[int]) -> int:
         queue = nums
         res = 0
@@ -37,6 +18,47 @@ class Solution:
             res += 1
         return res
 
+
+class Solution:
+    def totalSteps(self, nums: List[int]) -> int:
+        aux = [[0, 0]]  # ele = [index of previous peak larger than me, number of steps to remove me]
+        N = len(nums)
+        for i in range(1, N):
+            if nums[i] < nums[i - 1]:
+                break
+            aux.append([i, 0])
+        else:
+            return 0
+        aux.append([i - 1, 1])
+        res = 1
+        for j in range(i + 1, N):
+            if nums[j] < nums[j - 1] < nums[j - 2]:
+                aux.append(aux[-1])
+            elif nums[j] < nums[j - 1] and nums[j - 1] >= nums[j - 2]:
+                aux.append([j - 1, 1])
+            elif nums[j] == nums[j - 1]:
+                aux.append(aux[-1] if aux[-1][1] == 0 else [aux[-1][0], aux[-1][1] + 1])
+            elif nums[j] > nums[j - 1]:
+                pre_peak_idx = aux[-1][0]
+                aux.append([-1, aux[-1][1] + 1])
+                while nums[j] > nums[pre_peak_idx]:
+                    aux[-1][1] = 0 if aux[pre_peak_idx][1] == 0 else (aux[pre_peak_idx][1] + 1)
+                    if pre_peak_idx == aux[pre_peak_idx][0]:
+                        aux[-1][0] = j
+                        break
+                    else:
+                        pre_peak_idx = aux[pre_peak_idx][0]
+                if aux[-1][0] < 0:  # not set yet
+                    if nums[j] == nums[pre_peak_idx]:
+                        if aux[pre_peak_idx][1] == 0:
+                            aux[-1][0], aux[-1][1] = aux[pre_peak_idx]
+                        else:
+                            aux[-1][0], aux[-1][1] = aux[pre_peak_idx][0], aux[pre_peak_idx][1] + 1
+                    else:
+                        aux[-1][0] = pre_peak_idx
+            # print(aux)
+            res = max(res, aux[-1][1])
+        return res
 
 
 sol = Solution()
