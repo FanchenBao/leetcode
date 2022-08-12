@@ -90,14 +90,27 @@ class BIT:
 class BookMyShow:
 
     def __init__(self, n: int, m: int):
+        """So my original intuition was correct. This problem can be solved by
+        a max segment tree, binary search, and a sum segment tree (which is
+        implemented via binary index tree). The max segment tree is used for
+        gather, whereas the BIT is used for scatter. The only additional
+        optimization is to record the current smallest row that has empty seats
+        This significantly shrinks the search space as more gather calls are
+        made.
+
+        O(2logN) for each gather, O(RlogN) for each scatter where R = maxRow
+        """
         self.m = m
         self.empty_seats = [m] * n
-        self.seg_tree = SegTree(n, m)
-        self.bit = BIT(n)
+        self.seg_tree = SegTree(n, m)  # max value segment tree
+        self.bit = BIT(n)  # sum binary index tree
         for i in range(n):
             self.bit.update(i, m)
+        self.front = 0  # the first row that still has empty seats
 
     def _search_gather_row(self, lo: int, hi: int, tgt: int) -> int:
+        # binary search to locate the smallest row that has at least tgt
+        # number of seats
         while lo < hi:
             mid = (lo + hi) // 2
             lmax = self.seg_tree.query(lo, mid)
@@ -112,9 +125,11 @@ class BookMyShow:
         return lo
 
     def gather(self, k: int, maxRow: int) -> List[int]:
-        if maxRow == 0 and self.empty_seats[0] < k:
+        if maxRow == self.front and self.empty_seats[self.front] < k:
             return []
-        idx = self._search_gather_row(0, maxRow, k)
+        if maxRow < self.front:
+            return []
+        idx = self._search_gather_row(self.front, maxRow, k)
         if idx < 0:
             return []
         r, c = idx, self.m - self.empty_seats[idx]
@@ -124,23 +139,27 @@ class BookMyShow:
         return [r, c]
 
     def scatter(self, k: int, maxRow: int) -> bool:
-        total_empty = self.bit.query(maxRow)
+        if maxRow < self.front:
+            return False
+        total_empty = self.bit.query(maxRow) - (self.bit.query(self.front - 1) if self.front > 0 else 0)
         if total_empty < k:
             return False
-        idx = 0
         while k:
-            if self.empty_seats[idx] >= k:
-                self.empty_seats[idx] -= k
-                self.seg_tree.update(idx, self.empty_seats[idx])
-                self.bit.update(idx, -k)
-                k -= k
+            if self.empty_seats[self.front] >= k:
+                self.empty_seats[self.front] -= k
+                self.seg_tree.update(self.front, self.empty_seats[self.front])
+                self.bit.update(self.front, -k)
+                break
             else:
-                tmp = self.empty_seats[idx]
-                self.empty_seats[idx] = 0
-                self.seg_tree.update(idx, 0)
-                self.bit.update(idx, -tmp)
+                tmp = self.empty_seats[self.front]
+                self.empty_seats[self.front] = 0
+                self.seg_tree.update(self.front, 0)
+                self.bit.update(self.front, -tmp)
                 k -= tmp
-            idx += 1
+                self.front += 1
+        while self.front < len(self.empty_seats) and self.empty_seats[self.front] == 0:
+            # find the current smallest row that has empty seats
+            self.front += 1
         return True
 
 
