@@ -3,7 +3,7 @@ from typing import List
 import math
 
 
-class Solution:
+class Solution1:
     def movesToStamp(self, stamp: str, target: str) -> List[int]:
         """LeetCode 936
 
@@ -149,16 +149,65 @@ class Solution:
         return res[::-1]
 
 
-sol = Solution()
+class Solution2:
+    def movesToStamp(self, stamp: str, target: str) -> List[int]:
+        """This is from the solution a year ago, but with my current touch to
+        optimize it.
+        """
+        if target[0] != stamp[0] or target[-1] != stamp[-1]:
+            return []
+        N, M = len(target), len(stamp)
+        tgt = list(target)
+        res = []
+        # first scan, perform all suffix matching
+        for i in range(N - M + 1):
+            for j in range(M):
+                if tgt[i + j] != stamp[j] and tgt[i + j] != '?':
+                    break
+            else:
+                for j in range(M):
+                    tgt[i + j] = '?'
+                res.append(i)
+        # All suffix matching is done; end of target should've been matched
+        if tgt[-1] != '?':
+            return []
+        # second scan, perform all prefix matching, greedily
+        i = N - 1
+        while True:
+            while i >= 0 and tgt[i] == '?':
+                i -= 1
+            if i < 0:
+                break
+            left = i + 1
+            for j in range(max(0, i + 2 - M), i + 1):
+                for k in range(M):
+                    if tgt[j + k] != stamp[k] and tgt[j + k] != '?':
+                        break
+                else:
+                    for k in range(M):
+                        if tgt[j + k] != '?':
+                            tgt[j + k] = '?'
+                        else:  # the remaining must all be '?' already
+                            break
+                    res.append(j)
+                    i = j - 1
+                    break  # greedy. We only want the longest prefix match
+            else:
+                return []
+        return res[::-1]
+
+
+sol = Solution2()
 tests = [
-    ("abc", "ababc", [0, 2]),
-    ("abca", "aabcaca", [3, 0, 1]),
-    ('h', 'hhhhh', [4,3,2,1,0]),
-    ("oz", "ooozz", [0,3,1,2]),
-    ("cab", "cabbb", [2, 1, 0]),
-    ("by", "bbybyybyby", [4, 0, 8, 6, 3, 1]),
-    ("zbs", "zbzbsbszbssbzbszbsss", [17,10,16,8,4,0,15,12,7,2]),
-    ("ffebb", "fffeffebbb", [0,5,1,4]),
+    # ("abc", "ababc", [0, 2]),
+    # ("abca", "aabcaca", [3, 0, 1]),
+    # ('h', 'hhhhh', [4,3,2,1,0]),
+    # ("oz", "ooozz", [0,3,1,2]),
+    # ("cab", "cabbb", [2, 1, 0]),
+    # ("by", "bbybyybyby", [4, 0, 8, 6, 3, 1]),
+    # ("zbs", "zbzbsbszbssbzbszbsss", [17,10,16,8,4,0,15,12,7,2]),
+    # ("ffebb", "fffeffebbb", [0,5,1,4]),
+    ("zjmhy", "zmjzjzjmhy", []),
 ]
 
 for i, (stamp, target, ans) in enumerate(tests):
