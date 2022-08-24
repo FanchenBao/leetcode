@@ -111,7 +111,37 @@ class Solution3:
         return -1
 
 
-sol = Solution3()
+class Solution4:
+    def minRefuelStops(self, target: int, startFuel: int, stations: List[List[int]]) -> int:
+        """This is the heap solution. We don't refuel but try to reach as far
+        as possible gas station until fuel tank contains negative fuel. When
+        that happens, we know the current gas station cannot be reached without
+        refueling, but any of the previous gas stations can be reached. Thus,
+        we greedily choose the gas station with the highest amount of fuel to
+        refuel. This is where heap comes into play. We will keep popping the
+        highest amount of fuel to add to the tank, until the tank becomes
+        positive. Then we repeat the whole process, until either we reach the
+        destination or cannot progress any further
+
+        O(NlogN), 163 ms, faster than 77.57%
+        """
+        stations.append([target, 0])
+        tank = startFuel
+        heap = []
+        res = cur_pos = 0
+        for pos, fuel in stations:
+            tank -= pos - cur_pos
+            while tank < 0 and heap:
+                tank -= heapq.heappop(heap)
+                res += 1
+            if tank < 0:  # cannot progress further
+                return -1
+            heapq.heappush(heap, -fuel)
+            cur_pos = pos
+        return res if tank >= 0 else -1
+
+
+sol = Solution4()
 tests = [
     (1, 1, [], 0),
     (100, 1, [[10, 100]], -1),
