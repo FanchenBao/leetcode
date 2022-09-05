@@ -2,7 +2,7 @@
 from typing import List
 
 
-class Solution:
+class Solution1:
     below_20 = {
         '': '',
         '1': 'One',
@@ -73,7 +73,76 @@ class Solution:
         return res.strip()
 
 
-sol = Solution()
+class Solution2:
+    below_20 = [
+         '',
+         'One',
+         'Two',
+         'Three',
+         'Four',
+         'Five',
+         'Six',
+         'Seven',
+         'Eight',
+         'Nine',
+         'Ten',
+         'Eleven',
+         'Twelve',
+         'Thirteen',
+         'Fourteen',
+         'Fifteen',
+         'Sixteen',
+         'Seventeen',
+         'Eighteen',
+         'Nineteen',
+    ]
+    multiple_of_tens = [
+        '',
+        '',
+        'Twenty',
+        'Thirty',
+        'Forty',
+        'Fifty',
+        'Sixty',
+        'Seventy',
+        'Eighty',
+        'Ninety',
+    ]
+
+    def convert(self, num: int) -> str:
+        """num is at most three digits"""
+        if num == 0:
+            return ''
+        if num < 20:
+            return self.below_20[num] + ' '
+        if num < 100:
+            return self.multiple_of_tens[num // 10] + ' ' + self.convert(num % 10)
+        return self.convert(num // 100) + 'Hundred ' + self.convert(num % 100)
+
+
+    def numberToWords(self, num: int) -> str:
+        """Inspired by https://leetcode.com/problems/integer-to-english-words/discuss/70625/My-clean-Java-solution-very-easy-to-understand
+
+        With recursion, the logic is cleaner.
+
+        I think using arithmatic to get three-digit numbers is faster than
+        string splicing. 45 ms, faster than 70.56%
+        """
+        if num == 0:
+            return 'Zero'
+        res = ''
+        levels = ['Billion', 'Million', 'Thousand', '']
+        while num:
+            num, rem = divmod(num, 1000)
+            lvl = levels.pop()
+            if rem:
+                words = self.convert(rem)
+                res = f'{words}{lvl} ' + res
+        return res.strip()
+
+
+
+sol = Solution2()
 tests = [
     (0, 'Zero'),
     (123, "One Hundred Twenty Three"),
