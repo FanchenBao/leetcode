@@ -119,11 +119,34 @@ class Solution4:
                 lo = mid + 1
 
 
-sol = Solution4()
+class Solution5:
+    def findPeakGrid(self, mat: List[List[int]]) -> List[int]:
+        """Let's we go row-wise, because the max value can be computed simply by
+        max(row).
+
+        Slightly faster: 2645 ms, faster than 14.06%
+        """
+        M, N = len(mat), len(mat[0])
+        lo, hi = 0, M - 1
+        while lo <= hi:
+            mid = (lo + hi) // 2
+            max_mid = max(mat[mid])
+            max_mid_up = max(mat[mid - 1]) if mid > 0 else -1
+            max_mid_down = max(mat[mid + 1]) if mid < M - 1 else -1
+            if max_mid >= max_mid_up and max_mid >= max_mid_down:
+                return [mid, mat[mid].index(max_mid)]
+            if max_mid_up >= max_mid and max_mid_up >= max_mid_down:
+                hi = mid - 1
+            elif max_mid_down >= max_mid and max_mid_down >= max_mid_up:
+                lo = mid + 1
+
+
+sol = Solution6()
 tests = [
     ([[1,4],[3,2]], [0, 1]),
-    ([[10,20,15],[21,30,14],[7,16,32]], [1, 1]),
+    ([[10,20,15],[21,30,14],[7,16,32]], [2, 2]),
     ([[1,2,3,4,5,6,7,8],[2,3,4,5,6,7,8,9],[3,4,5,6,7,8,9,10],[4,5,6,7,8,9,10,11]], [3,7]),
+    ([[45,35,27,15,29],[38,18,1,49,11],[45,28,22,18,10],[14,49,7,6,25],[7,23,39,17,3]], [1,3])
 ]
 
 for i, (mat, ans) in enumerate(tests):
