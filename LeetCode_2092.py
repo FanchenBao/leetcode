@@ -38,30 +38,63 @@ class DSU:
 
 class Solution:
     def findAllPeople(self, n: int, meetings: List[List[int]], firstPerson: int) -> List[int]:
+        """This is a good problem. It is apparently union-find, but there are
+        two twists.
+
+        First, we need to deal with the situation like this
+
+        [[3,1,3],[1,2,2],[0,3,3]] with firstPerson = 3
+
+        The first meeting is between 1 and 2; neither has secret. The second
+        meeting is between 3 and 1, so now 1 has secret. However, the meeting
+        between 1 and 2 happens earlier. Thus, 2 still does not have secret,
+        despite 1 having secret. If we use a naive union-find, where 1 and 2
+        are unioned. Then when 1 and 3 are unioned, 2 would've been unioned
+        with 3 as well, making him share secret. We must break such tie. Hence
+        during iteration of the meeting (in ascending time order), whenever all
+        the meetings of the same time have ended, we check to see if any of the
+        people involved does not share secret. For such outsider, we must cut
+        its tie to any of the union before.
+
+        Second, we want anyone that union with someone else who has zero as
+        parent to also have zero as parent. However, since the union is decided
+        by the rank of the parent, it is likely the rank of zero is lower than
+        the rank of another parent, if the other parent is unioned ahead of
+        time. Therefore, we must arbitrarily set the rank of zero maximum,
+        thus guaranteeing that whoever unions with some with parent as zero
+        also gets zero as parent.
+
+        O(MlogM + (M + N)alpha(N)), where M = len(meetings), and alpha(N) is
+        the inverse function of Ackermann function, which describes the time
+        complexity of union find with path compression.
+
+        5625 ms, faster than 12.50%
+
+        Time complexity inspired by: https://leetcode.com/problems/find-all-people-with-secret/discuss/1599815/C%2B%2B-Union-Find
+        """
         meetings.sort(key=lambda tup: tup[2])
         dsu = DSU(n)
         dsu.union(0, firstPerson)
-        # no_secrets = {}  # {person without secret: most recent meeting time}
         pre_t = 0
-        people = set()
+        outsider = set()
         for x, y, t in meetings:
             if t != pre_t:
-                for p in people:
+                for p in outsider:
                     if dsu.find(p) != 0:
                         # at the end of a specific time, if a person is not
                         # part of the secret, he must be removed of any
-                        # connection to any other people who might become an
-                        # insider later on. This is to avoid such other people
+                        # connection to any other outsider who might become an
+                        # insider later on. This is to avoid such other outsider
                         # becoming an insider pulls the current person into the
                         # secret as well
                         dsu.detach(p)
-                people = set()
+                outsider = set()
             dsu.union(x, y)
             pre_t = t
             if dsu.find(x):
-                people.add(x)
+                outsider.add(x)
             if dsu.find(y):
-                people.add(y)
+                outsider.add(y)
         return [i for i in range(n) if dsu.find(i) == 0]
 
 
