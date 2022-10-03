@@ -2,9 +2,11 @@
 from typing import List
 import math
 from bisect import bisect_right
+from collections import defaultdict
+import heapq
 
 
-class Solution:
+class Solution1:
     def getSkyline(self, buildings: List[List[int]]) -> List[List[int]]:
         """LeetCode 218
 
@@ -108,7 +110,42 @@ class Solution:
         return sorted(res)
 
 
-sol = Solution()
+class Solution2:
+    def getSkyline(self, buildings: List[List[int]]) -> List[List[int]]:
+        """This is the priority queue smart idea.
+
+        We break the buildings into critical points, which are the x-coord of
+        all the left and right boundaries of the buildings. It is clear that
+        the points that we want to record must be a critical point. And each
+        critical point must be associated with the heighest height that it can
+        reach, except when the current height is the same as the height of the
+        most recent record (i.e. no two adjacent critical points share the same
+        height). Using this rule, we can employ heap to solve this problem more
+        easily.
+
+        O(NlogN), 99 ms, faster than 99.97%
+        """
+        cps = set()
+        lb = defaultdict(list)
+        for l, r, h in buildings:
+            cps.add(l)
+            cps.add(r)
+            lb[l].append((-h, r))
+        cps = sorted(cps)
+        heap = []
+        res = []
+        for cp in cps:
+            for ele in lb.get(cp, []):
+                heapq.heappush(heap, ele)
+            while heap and heap[0][1] <= cp:
+                heapq.heappop(heap)
+            critical_height = -heap[0][0] if heap else 0
+            if not res or res[-1][1] != critical_height:
+                res.append([cp, critical_height])
+        return res
+
+
+sol = Solution2()
 tests = [
     ([[2,9,10],[3,7,15],[5,12,12],[15,20,10],[19,24,8]], [[2,10],[3,15],[7,12],[12,0],[15,10],[20,8],[24,0]]),
     ([[0,2,3],[2,5,3]], [[0,3],[5,0]]),
