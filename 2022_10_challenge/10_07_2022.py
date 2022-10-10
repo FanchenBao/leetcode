@@ -1,7 +1,7 @@
 # from pudb import set_trace; set_trace()
 from typing import List
 import math
-from bisect import bisect_right
+from bisect import bisect_right, bisect_left
 
 
 class MyCalendarThree:
@@ -99,6 +99,30 @@ class MyCalendarThree:
                             self.k = max(self.k, self.map[lo])
         return self.k
 
+
+class MyCalendarThree:
+
+    def __init__(self):
+        self.data = []
+        self.k = 0
+
+    def book(self, start: int, end: int) -> int:
+        self.data.sort()
+        idx = bisect_right(self.data, start)
+        res = 1
+        for i in range(idx):
+            res += int(self.data[i][1] > start)
+        
+        rights = [self.data[i][1] for i in range(idx)]
+        for j in range(idx, len(self.data)):
+
+
+        for s, e in 
+        temp = sorted(e for s, e in self.data if s <= start)
+        idx = bisect_right(temp, start)
+        if self.k < len(temp) - idx:
+            self.k = len(temp) - idx
+        return self.k
 
 # sol = Solution()
 # tests = [
