@@ -2,9 +2,10 @@
 from typing import List
 import math
 from bisect import bisect_right, bisect_left
+from collections import Counter
 
 
-class MyCalendarThree:
+class MyCalendarThree1:
     """LeetCode 732
 
     Remarkably, it passes on the first try. Really really convoluted and a lot
@@ -100,29 +101,48 @@ class MyCalendarThree:
         return self.k
 
 
-class MyCalendarThree:
+class MyCalendarThree2:
+    """This idea finally worked.
+
+    The basic idea is that we sort all the previous intervals by their start
+    value. Given the current start, we can use binary search to find where to
+    insert it.
+
+    The number of intervals that overlap with the current interval is equal to
+    the number of previous intervals (after sort) with their starts smaller or
+    equal to the current start AND their end larger than the current start.
+
+    After computing this, we save the count of overlap for the current start in
+    a hashmap.
+
+    We proceed to process the previous intervals with start larger than
+    the current start. Note that the previous intervals with start smaller or
+    equal to the current start will not get any more overlaps. For those
+    intervals with larger start, we only need to check whether their start is
+    smaller than the current end. If it is, we can produce one more overlap for
+    it. Another important thing to note is that for this to work, we must use
+    unique starts to avoid double counting.
+
+    1160 ms, faster than 75.86%
+    Time complexity of book() is O(NlogN)
+    """
 
     def __init__(self):
         self.data = []
-        self.k = 0
+        self.count = Counter()
 
     def book(self, start: int, end: int) -> int:
         self.data.sort()
-        idx = bisect_right(self.data, start)
-        res = 1
+        idx = bisect_right(self.data, start, key=lambda tup: tup[0])
+        res = 1  # the current interval
         for i in range(idx):
             res += int(self.data[i][1] > start)
-        
-        rights = [self.data[i][1] for i in range(idx)]
-        for j in range(idx, len(self.data)):
-
-
-        for s, e in 
-        temp = sorted(e for s, e in self.data if s <= start)
-        idx = bisect_right(temp, start)
-        if self.k < len(temp) - idx:
-            self.k = len(temp) - idx
-        return self.k
+        self.count[start] = res
+        # check all the starts that are larger than the current start
+        for s in set(self.data[j][0] for j in range(idx, len(self.data))):
+            self.count[s] += int(s < end)
+        self.data.append((start, end))
+        return max(self.count.values())
 
 # sol = Solution()
 # tests = [
