@@ -2,7 +2,8 @@
 from typing import List
 import math
 from bisect import bisect_right, bisect_left
-from collections import Counter
+from collections import Counter, defaultdict
+from itertools import accumulate
 
 
 class MyCalendarThree1:
@@ -144,7 +145,97 @@ class MyCalendarThree2:
         self.data.append((start, end))
         return max(self.count.values())
 
-# sol = Solution()
+
+class MyCalendarThree3:
+    """Sweep-line algo from the official solution
+    """
+
+    def __init__(self):
+        self.counter = Counter()
+
+    def book(self, start: int, end: int) -> int:
+        """Sweep-line. Increment on start, decrement on end, and then traverse
+        the counter in order to find the largest prefix sum.
+
+        Very simple approach, despite having O(NlogN) per call.
+        3391 ms, faster than 31.70%
+        """
+        self.counter[start] += 1
+        self.counter[end] -= 1
+        return max(accumulate(self.counter[k] for k in sorted(self.counter)))
+
+
+class MyCalendarThree4:
+    """Segment Tree with Lazy Propagation
+
+    Implementation detail derives from
+    https://www.geeksforgeeks.org/lazy-propagation-in-segment-tree/
+
+    One key thing to keep in mind is that we want the range of a node to be
+    inclusive on both ends.
+    """
+
+    def __init__(self):
+        self.tree = defaultdict(int)
+        self.lazy = defaultdict(int)
+        self.MAX = 10**9 + 1
+
+    def _update_util(self, si: int, ss: int, se: int, us: int, ue: int, diff: int) -> None:
+        if ss > se or se < us or ue < ss:
+            return
+        if self.lazy[si]:
+            self.tree[si] += self.lazy[si]
+            if se != ss:  # current node is not leaf, propagate lazy
+                self.lazy[2 * si + 1] += self.lazy[si]
+                self.lazy[2 * si + 2] += self.lazy[si]
+            self.lazy[si] = 0  # lazy has been handled
+        if us <= ss and se <= ue:  # current node contained within update range
+            self.tree[si] += diff
+            if se != ss:
+                self.lazy[2 * si + 1] += diff
+                self.lazy[2 * si + 2] += diff
+        else:  # partial overlap
+            mid = (ss + se) // 2
+            self._update_util(2 * si + 1, ss, mid, us, ue, diff)
+            self._update_util(2 * si + 2, mid + 1, se, us, ue, diff)
+            self.tree[si] = max(self.tree[si], self.tree[2 * si + 1], self.tree[2 * si + 2])
+
+    def _update(self, us: int, ue: int) -> None:
+        self._update_util(0, 0, self.MAX, us, ue, 1)
+
+    def book(self, start: int, end: int) -> int:
+        self._update(start, end - 1)
+        return self.tree[0]
+
+
+# def print_segtree(tree, si, ss, se) -> None:
+#     if ss > se:
+#         return
+#     if tree[si]:
+#         print(ss, se, tree[si])
+#     if ss != se:
+#         mid = (ss + se) // 2
+#         print_segtree(tree, 2 * si + 1, ss, mid)
+#         print_segtree(tree, 2 * si + 2, mid + 1, se)
+
+
+# sol = MyCalendarThree4()
+# print(sol.book(10, 20))
+# print_segtree(sol.tree, 0, 0, sol.MAX)
+
+# print(sol.book(40, 45))
+# print_segtree(sol.tree, 0, 0, sol.MAX)
+
+# print(sol.book(10, 30))
+# print_segtree(sol.tree, 0, 0, sol.MAX)
+
+# print(sol.book(5, 15))
+# print_segtree(sol.tree, 0, 0, sol.MAX)
+
+# print(sol.book(5, 10))
+# print_segtree(sol.tree, 0, 0, sol.MAX)
+# print(sol.book(25, 55))
+
 # tests = [
 #     ([4,2,1,3], [[1,2],[2,3],[3,4]]),
 #     ([1,3,6,10,15], [[1,3]]),
