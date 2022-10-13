@@ -4,6 +4,7 @@ import math
 from bisect import bisect_right, bisect_left
 from collections import Counter, defaultdict
 from itertools import accumulate
+from sortedcontainers import SortedList
 
 
 class MyCalendarThree1:
@@ -208,6 +209,57 @@ class MyCalendarThree4:
         return self.tree[0]
 
 
+class MyCalendarThree5:
+    """Use SortedList, but the most important insight, from the official
+    solution, is that we keep the list of intervals that are adjacent to each
+    other. And since they are adjacent, we only need to keep track of the start
+    of each interval.
+
+    For instance, we initialize the interval as [[0, 0]], meaning we have an
+    interval starting from 0 and has 0 events in this entire interval.
+
+    Add [10, 20], interval = [[0, 0], [10, 1], [20, 0]]
+    Add [50, 60], interval = [[0, 0], [10, 1], [20, 0], [50, 1], [60, 0]]
+    Add [10, 40], interval = [[0, 0], [10, 2], [20, 1], [40, 0], [50, 1], [60, 0]]
+    Add [5, 15], interval = [[0, 0], [5, 1], [10, 3], [15, 2], [20, 1], [40, 0], [50, 1], [60, 0]]
+    Add [5, 10], interval = [[0, 0], [5, 2], [10, 3], [15, 2], [20, 1], [40, 0], [50, 1], [60, 0]]
+    Add [25, 55], interval = [[0, 0], [5, 2], [10, 3], [15, 2], [20, 1], [25, 2], [40, 1], [50, 2], [55, 1], [60, 0]]
+
+    O(N) for each book call, 369 ms, faster than 92.46% 
+    """
+
+    def __init__(self):
+        self.intervals = SortedList([[0, 0]])
+        self.k = 0
+
+    def book(self, start: int, end: int) -> int:
+        """Find where start is located in self.intervals, add or split
+        intervals if necessary. Then iterate until end, add or split intervals
+        if necessary. Keep track of the largest k encountered so far.
+        """
+        idx = bisect_right(self.intervals, start, key=lambda tup: tup[0])
+        if self.intervals[idx - 1][0] == start:
+            self.intervals[idx - 1][1] += 1
+            self.k = max(self.k, self.intervals[idx - 1][1])
+        else:
+            new_val = self.intervals[idx - 1][1] + 1
+            self.intervals.add([start, new_val])
+            self.k = max(self.k, new_val)
+            idx += 1
+        for i in range(idx, len(self.intervals)):
+            if self.intervals[i][0] < end:
+                self.intervals[i][1] += 1
+                self.k = max(self.k, self.intervals[i][1])
+            elif self.intervals[i][0] > end:
+                self.intervals.add([end, self.intervals[i - 1][1] - 1])
+                break
+            else:
+                break
+        else:
+            self.intervals.add([end, self.intervals[-1][1] - 1])
+        return self.k
+
+
 # def print_segtree(tree, si, ss, se) -> None:
 #     if ss > se:
 #         return
@@ -219,22 +271,22 @@ class MyCalendarThree4:
 #         print_segtree(tree, 2 * si + 2, mid + 1, se)
 
 
-# sol = MyCalendarThree4()
-# print(sol.book(10, 20))
+sol = MyCalendarThree5()
+print([10, 20], sol.book(10, 20))
 # print_segtree(sol.tree, 0, 0, sol.MAX)
 
-# print(sol.book(40, 45))
+print([50, 60], sol.book(50, 60))
 # print_segtree(sol.tree, 0, 0, sol.MAX)
 
-# print(sol.book(10, 30))
+print([10, 40], sol.book(10, 40))
 # print_segtree(sol.tree, 0, 0, sol.MAX)
 
-# print(sol.book(5, 15))
+print([5, 15], sol.book(5, 15))
 # print_segtree(sol.tree, 0, 0, sol.MAX)
 
-# print(sol.book(5, 10))
+print([5, 10], sol.book(5, 10))
 # print_segtree(sol.tree, 0, 0, sol.MAX)
-# print(sol.book(25, 55))
+print([25, 55], sol.book(25, 55))
 
 # tests = [
 #     ([4,2,1,3], [[1,2],[2,3],[3,4]]),
