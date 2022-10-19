@@ -4,7 +4,7 @@ import math
 from functools import lru_cache
 
 
-class Solution:
+class Solution1:
     def baseNeg2(self, n: int) -> str:
         """Definitely not a good solution. Overall, we didn't bifurcate on each
         occassion, but still the savings from the two special cases where we
@@ -39,7 +39,31 @@ class Solution:
         return dfs(n, l).lstrip('0')
 
 
-sol = Solution()
+class Solution2:
+    def baseNeg2(self, n: int) -> str:
+        """The trick is .... the same as base 2. But I forgot that base 2 can
+        be converted using remainder. We can do the same with base -2, except
+        when the remainder is negative, which can only be -1, we remove another
+        -2 from it to make it positive, and add one to the quotient. We keep
+        doing this until the quotient is zero.
+
+        O(logN), 63 ms, faster than 20.00%
+        """
+        if n == 0:
+            return '0'
+        q = n
+        res = []
+        while q:
+            q, r = divmod(q, -2)
+            if r < 0:
+                q += 1
+                res.append('1')
+            else:
+                res.append('0')
+        return ''.join(res[::-1])
+
+
+sol = Solution2()
 tests = [
     (2, '110'),
     (3, '111'),

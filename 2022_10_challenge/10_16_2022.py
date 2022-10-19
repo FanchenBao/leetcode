@@ -104,10 +104,58 @@ class Solution2:
         return dp[-1] if dp[-1] < math.inf else -1
 
 
+class Solution3:
+    def minDifficulty(self, jobDifficulty: List[int], d: int) -> int:
+        """This is exactly the same as Solution2, but I want some more practice
+        on this problem.
+
+        We use dp[i] to represent the min schedule difficulty on the (j - 1)th
+        day covering jobs from 0 to i.
+
+        We use tmp[i] to represent the min schedule difficulty on the jth day
+        covering jobs from 0 to i.
+
+        The initial attempt at computing tmp[i] = dp[i - 1] + jobDifficulty[i]
+        This says if we group job i by itself for the jth day, then tmp[i] is
+        equal to the sum of the min schedule difficulty of the previous day
+        up to job i - 1 and the job difficulty of today.
+
+        Then, we need to explore the possibility of grouping job i with some of
+        the previous jobs without incurring more difficulty. This means, we
+        want to search backwards to include all the jobs that have difficulties
+        lower than job i. To facilitate this action, we use an additional
+        monotonic decreasing stack. If the tail of the stack is smaller than
+        than job i, then we can group that job with job i. So we pop it from the
+        stack, and update tmp[i] = min(tmp[i], tmp[stack[-1]] - jobDifficulty[stack[-1]] +
+        jobDifficulty[i])
+
+        Once all the tail of stack is handled, we arrive at the end of stack
+        that is the smallest job with higher difficulty than job i. We have a
+        choice to make here. Either extend the end of stack to include job i
+        as one group of job, or not. This is expressed as tmp[i] = min(tmp[i],
+        tmp[stack[-1]])
+
+        Time complexity O(ND), 155 ms, faster than 92.06%
+        """
+        N = len(jobDifficulty)
+        if d > N:
+            return -1
+        dp, tmp = [math.inf] * N, [0] * N
+        for j in range(d):
+            stack = []
+            for i in range(j, N):
+                tmp[i] = (dp[i - 1] if i > 0 else 0) + jobDifficulty[i]
+                while stack and jobDifficulty[stack[-1]] <= jobDifficulty[i]:
+                    k = stack.pop()
+                    tmp[i] = min(tmp[i], tmp[k] - jobDifficulty[k] + jobDifficulty[i])
+                if stack:
+                    tmp[i] = min(tmp[i], tmp[stack[-1]])
+                stack.append(i)
+            dp, tmp = tmp, dp
+        return dp[-1]
 
 
-
-sol = Solution2()
+sol = Solution3()
 tests = [
     ([6,5,4,3,2,1], 2, 7),
     ([9,9,9], 4, -1),
