@@ -5,7 +5,7 @@ from functools import lru_cache
 from itertools import accumulate
 
 
-class Solution:
+class Solution1:
     def minDifficulty(self, jobDifficulty: List[int], d: int) -> int:
         """LeetCode 1335
 
@@ -49,7 +49,65 @@ class Solution:
         return res if res < math.inf else -1
 
 
-sol = Solution()
+class Solution2:
+    def minDifficulty(self, jobDifficulty: List[int], d: int) -> int:
+        """This is a O(ND) time complexity solution from lee215
+
+        https://leetcode.com/problems/minimum-difficulty-of-a-job-schedule/discuss/490316/JavaC%2B%2BPython3-DP-O(nd)-Solution
+
+        It seems like a 1D DP, but it also uses stack to reduce the amount of
+        computation.
+
+        We use dp and tmp for the previous and current DP state. dp[i] is the
+        min schedule difficulty from 0 to i for the (j - 1)th day. tmp[i] is the
+        min schedule difficulty from 0 to i for the jth day.
+
+        Thus, when we are at tmp[i], we first look back at dp[i - 1]. Say we
+        take job[i] by itself, then tmp[i] = dp[i - 1] + jobDifficulty[i]
+
+        Then, we consider whether it is possible to group job[i] with any of
+        the previous jobs. For each day, we maintain a monotonic decreasing
+        stack, which stores the indices of the job with decreasing difficulty.
+
+        We compare jobDifficulty[i] with the tail of the stack. If the tail
+        is smaller, then we have the possibility to group all the jobs from
+        job[stack[-1]] till job[i], because they will all have the same max
+        difficulty, which is jobDifficulty[i]. This might reduce the counting
+        of multiple local high job difficulties.
+
+        Once we reach job[stack[-1]] that is larger than jobDifficulty[i], we
+        have the possibility to include jobDifficulty[i] into job[stack[-1]].
+
+        Once both conditions are considered, we will have arrived at the min
+        schedule difficulty for the current day at job[i]
+
+        O(ND), 59 ms, faster than 99.45%. This is bonkers!!
+        """
+        N = len(jobDifficulty)
+        if N < d:
+            return -1
+        dp = [math.inf] * N  # schedule difficulty on 0th day
+        tmp = [0] * N
+        for k in range(d):
+            stack = []
+            for i in range(k, N):  # after k days, at least k jobs must have been done
+                tmp[i] = (dp[i - 1] if i > 0 else 0) + jobDifficulty[i]
+                while stack and jobDifficulty[i] >= jobDifficulty[stack[-1]]:
+                    j = stack.pop()
+                    # group all jobs from j to i together
+                    tmp[i] = min(tmp[i], tmp[j] - jobDifficulty[j] + jobDifficulty[i])
+                if stack:
+                    # include ith job with the stack[-1]th job
+                    tmp[i] = min(tmp[i], tmp[stack[-1]])
+                stack.append(i)
+            dp, tmp = tmp, dp
+        return dp[-1] if dp[-1] < math.inf else -1
+
+
+
+
+
+sol = Solution2()
 tests = [
     ([6,5,4,3,2,1], 2, 7),
     ([9,9,9], 4, -1),
