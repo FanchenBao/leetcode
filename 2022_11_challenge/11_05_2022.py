@@ -9,7 +9,7 @@ class Solution:
     def findWords(self, board: List[List[str]], words: List[str]) -> List[str]:
         """LeetCode 212
 
-        What a journey. I have solved this problem before by myself, but the
+        What a journey! I have solved this problem before by myself, but the
         same method back then no longer worked today, because the test cases
         had been enlarged. This means the method must be even more optimized.
 
@@ -58,9 +58,8 @@ class Solution:
                 if '*' in next_node:
                     w = next_node['*']
                     res.append(w)
-                    # remove the word indicator
+                    # remove the word and decrement count for the current word
                     del next_node['*']
-                    # decrement count for the current word
                     tmp = root
                     for le in w:
                         tmp = tmp[le]
