@@ -9,6 +9,8 @@ sys.setrecursionlimit(3000)
 
 class Solution:
     def canMouseWin(self, grid: List[str], catJump: int, mouseJump: int) -> bool:
+        """TLE.
+        """
         M, N = len(grid), len(grid[0])
         for i in range(M):
             for j in range(N):
@@ -21,39 +23,38 @@ class Solution:
 
         @lru_cache(maxsize=None)
         def helper(ci: int, cj: int, mi: int, mj: int, is_mouse_turn: bool, turns: int) -> bool:
-            # print(turns)
             if turns >= 1000:
                 return False
-            if ci == mi and cj == mj:
+            if ci == mi and cj == mj:  # cat reaches mouse
                 return False
-            if ci == fi and cj == fj:
+            if ci == fi and cj == fj:  # cat reaches food
                 return False
-            if mi == fi and mj == fj:
+            if mi == fi and mj == fj:  # mouse reaches food
                 return True
             if is_mouse_turn:
-                if helper(ci, cj, mi, mj, False, turns + 1):  # mouse stay
-                    return True
-                for d in range(1, mouseJump + 1):
-                    for di, dj in [(d, 0), (-d, 0), (0, d), (0, -d)]:
+                for ui, uj in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+                    for d in range(1, mouseJump + 1):
+                        di, dj = ui * d, uj * d
                         nmi, nmj = mi + di, mj + dj
                         if 0 <= nmi < M and 0 <= nmj < N and grid[nmi][nmj] != '#':
                             if helper(ci, cj, nmi, nmj, False, turns + 1):
                                 return True
+                        else:  # either going outside or hit a wall
+                            break
                 return False
+
             # cat's turn
-            if not helper(ci, cj, mi, mj, True, turns + 1):  # cat stay
-                return False
-            for d in range(1, catJump + 1):
-                for di, dj in [
-                    (min(d, mi - ci) if mj == cj and mi > ci else d, 0),
-                    (max(-d, mi - ci) if mj == cj and mi < ci else -d, 0),
-                    (0, min(d, mj - cj) if mi == ci and mj > cj else d),
-                    (0, max(-d, mj - cj) if mi == ci and mj < cj else -d),
-                ]:
+            for ui, uj in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+                for d in range(1, catJump + 1):
+                    di, dj = ui * d, uj * d
                     nci, ncj = ci + di, cj + dj
+                    if nci == mi and ncj == mj:
+                        return False
                     if 0 <= nci < M and 0 <= ncj < N and grid[nci][ncj] != '#':
                         if not helper(nci, ncj, mi, mj, True, turns + 1):
                             return False
+                    else:  # either going outside or hit a wall
+                        break
             return True
             # print(ci, cj, mi, mj, is_mouse_turn, turns, f'{res=}')
 
@@ -62,10 +63,11 @@ class Solution:
 
 sol = Solution()
 tests = [
-    # (["####F","#C...","M...."], 1, 2, True),
-    # (["M.C...F"], 1, 4, True),
-    # (["M.C...F"], 1, 3, False),
+    (["####F","#C...","M...."], 1, 2, True),
+    (["M.C...F"], 1, 4, True),
+    (["M.C...F"], 1, 3, False),
     (["C...#","...#F","....#","M...."], 2, 5, False),
+    ([".....","...C.","...#.","...#M","F..#."], 1, 3, True),
 ]
 
 for i, (grid, catJumpm, mouseJump, ans) in enumerate(tests):
