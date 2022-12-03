@@ -1,7 +1,7 @@
 # from pudb import set_trace; set_trace()
 from typing import List
 import math
-from collections import defaultdict
+from collections import defaultdict, Counter
 from bisect import bisect_left
 from itertools import accumulate
 
@@ -78,7 +78,31 @@ class Solution2:
         return res
 
 
-sol = Solution2()
+class Solution3:
+    def countSubarrays(self, nums: List[int], k: int) -> int:
+        """Same idea as Solution2, but we don't have to use binary search to
+        find the count. We can use counter directly.
+
+        I don't know why I hadn't thought about using Counter directly. This is
+        not the first time that I have used binary search for a problem that can
+        be easily solved using Counter.
+
+        O(N), 504 ms, faster than 97.72%
+        """
+        idx = nums.index(k)
+        # note that presum as a zero a the beginning
+        presum = list(accumulate((1 if n > k else (-1 if n < k else 0) for n in nums), initial=0))
+        # counter of presum to the left of k, and counter of presum to the right
+        # of k (including k)
+        lc, rc = Counter(presum[:idx + 1]), Counter(presum[idx + 1:])
+        res = 0
+        for k_, v in lc.items():
+            res += v * rc[k_]  # odd length subarray
+            res += v * rc[k_ + 1]  # even length subarray
+        return res
+
+
+sol = Solution3()
 tests = [
     ([3,2,1,4,5], 4, 3),
     ([2,3,1], 3, 1),
