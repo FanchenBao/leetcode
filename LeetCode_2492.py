@@ -1,5 +1,5 @@
 # from pudb import set_trace; set_trace()
-from typing import List
+from typing import List, Set
 import math
 from collections import defaultdict
 
@@ -75,7 +75,33 @@ class Solution2:
         return res
 
 
-sol = Solution2()
+class Solution3:
+    def minScore(self, n: int, roads: List[List[int]]) -> int:
+        """DFS. Just traverse through everything starting from 1, and keep track
+        of the smallest edge.
+
+        O(N), 3165 ms, faster than 65.68%
+        """
+        graph = defaultdict(list)
+        for a, b, dis in roads:
+            graph[a].append((b, dis))
+            graph[b].append((a, dis))
+
+        self.res = math.inf
+        visited = set()
+
+        def dfs(node: int) -> None:
+            visited.add(node)
+            for b, dis in graph[node]:
+                self.res = min(self.res, dis)
+                if b not in visited:
+                    dfs(b)
+
+        dfs(1)
+        return self.res
+
+
+sol = Solution3()
 tests = [
     (4, [[1,2,9],[2,3,6],[2,4,5],[1,4,7]], 5),
     (4, [[1,2,2],[1,3,4],[3,4,7]], 2),
