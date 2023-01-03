@@ -5,8 +5,21 @@ from collections import defaultdict, Counter
 from bisect import bisect_left
 
 
-class Solution:
+class Solution1:
     def takeCharacters(self, s: str, k: int) -> int:
+        """Pretty bad, and I don't like this solution at all. But it worked.
+
+        We produce prefix sum on the count of 'a', 'b', and 'c' going from left
+        to right, and right to left.
+
+        Then we go from left to right taking 0, 1, 2, ... minutes. For each such
+        minute, we know the number of 'a', 'b', 'c' we can take from the left.
+        Then we go to the right and binary search to find the earliest minutes
+        needed to satisfy k for all three letters. We then keep track of the min
+        of all the earliest minutes, and that is our solution.
+
+        O(NlogN), 2292 ms, faster than 11.38%
+        """
         N = len(s)
         lpsum = {'a': [0], 'b': [0], 'c': [0]}
         rpsum = {'a': [0], 'b': [0], 'c': [0]}
@@ -18,6 +31,8 @@ class Solution:
                 rpsum[le].append(rpsum[le][-1] + int(le == s[j]))
         res = math.inf
         for lt in range(len(lpsum['a'])):
+            if lt >= res:
+                break
             t = 0
             for le in lpsum.keys():
                 lc = lpsum[le][lt]
@@ -31,13 +46,48 @@ class Solution:
 
 
 
-sol = Solution()
+class Solution2:
+    def takeCharacters(self, s: str, k: int) -> int:
+        """Convert the problem to finding at most count[le] - k number of a, b
+        or c in a substring across the middle of s.
+
+        This can be solved with sliding window.
+
+        Ref: https://leetcode.com/problems/take-k-of-each-character-from-left-and-right/discuss/2948183/Python-clean-12-line-sliding-window-solution-with-explanation
+
+        O(N), 865 ms, faster than 29.01%
+
+        UPDATE: during sliding window, we only need to check the current letter
+        437 ms, faster than 60.28%
+        """
+        letters = 'abc'
+        limit = Counter(s)
+        # find limit
+        for le in letters:
+            if limit[le] < k:
+                return -1
+            limit[le] -= k
+        i = 0
+        c = Counter()
+        max_l = 0
+        for j in range(len(s)):
+            c[s[j]] += 1
+            while c[s[j]] > limit[s[j]]:
+                c[s[i]] -= 1
+                i += 1
+            max_l = max(max_l, j - i + 1)
+        return len(s) - max_l
+
+
+
+sol = Solution2()
 tests = [
     ("aabaaaacaabc", 2, 8),
     ("a", 1, -1),
     ("aabaaaacaabcb", 2, 6),
     ("acba", 1, 3),
     ("cbaabccac", 3, -1),
+    ("abc", 1, 3),
 ]
 
 for i, (s, k, ans) in enumerate(tests):
