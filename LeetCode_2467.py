@@ -105,6 +105,8 @@ class Solution3:
 
         Distance between idx and Bob is set to larger or equal to n if idx is
         not an ancestor of Bob.
+
+        O(N), 1710 ms, faster than 98.22% 
         """
         N = len(amount)
         graph = [[] for _ in range(N)]
