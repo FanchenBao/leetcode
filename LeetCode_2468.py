@@ -3,7 +3,7 @@ from typing import List
 import math
 
 
-class Solution:
+class Solution1:
     def splitMessage(self, message: str, limit: int) -> List[str]:
         """No need to binary search.
 
@@ -51,8 +51,37 @@ class Solution:
         return [r.replace('*', str(j)) for r in res]
 
 
-sol = Solution()
+class Solution2:
+    def splitMessage(self, message: str, limit: int) -> List[str]:
+        """Brute force, go from one partition until the desired number of
+        partitions. At each partition, we can compute the total length, and
+        compare that to the max length possible. We stop when a fit has been
+        encountered.
+
+        O(N), 379 ms, faster than 88.04%
+        """
+        k = 1
+        N = len(message)
+        cur_len = N
+        while (occ := 3 + 2 * len(str(k))) < limit:
+            cur_len += occ + (len(str(k)) - len(str(k - 1))) * (k - 1)
+            if cur_len <= limit * k:
+                break
+            k += 1
+        if occ >= limit:
+            return []
+        res = []
+        i = 0
+        for j in range(1, k + 1):
+            to_take = limit - 3 - len(str(k)) - len(str(j))
+            res.append(f'{message[i:i + to_take]}<{j}/{k}>')
+            i += to_take
+        return res
+
+
+sol = Solution2()
 tests = [
+    ("short message", 4, []),
     ("this is really a very awesome message", 9, ["thi<1/14>","s i<2/14>","s r<3/14>","eal<4/14>","ly <5/14>","a v<6/14>","ery<7/14>"," aw<8/14>","eso<9/14>","me<10/14>"," m<11/14>","es<12/14>","sa<13/14>","ge<14/14>"]),
     ("short message", 15, ["short mess<1/2>","age<2/2>"]),
     ("aaaaaa aaaaaa aaa aaaaaa aaaaaaaaaaaaaaaaaaaa aaaaa aaaaaaaaaaaaa aaaaaaaaaaaaaaaaaaa aaaa aaaaaaaaaaaaaaa aaaaaaaaa aaaaaaaaa aaaaaaaaaaaa aaaaaaaaaaaaaaa aaaaaaaaaaaaa aaaaaaaaaaaa aaaaaaaaaaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaa aaaa aaaaaaaaaaaaaaaa aaaaaaaaaaaaaaa a aaaaaaaaaaaaaaaaa aaaaaaaaaaaaaa aaaaaaaaa aaaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaa aaa aaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaaa aaaaaaaaaaaaa aaaa aaaaa aaa aa aaaaaaaaaaaaaaaaaaa a aaaaaaaaaaaaaaaa aaaaaaaaaaaa aaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaaa aaaa aaaaaaaaaaa aaaaaaaaaa aaaaaaaaaaaa aaaaaa aaaaaaaaaaaaaaaaaaa aaaaaaaaaaaa aaaa aaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaa aaaaa aaaaaaaaaaaaaaaaaa aaaaa aaaaaaaaaaaaaaaaa a aaaaaaaaaaaaaaaaa aaaaaaaaa aaa aaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaa aaaaaa aaaaaaaaaaaaaaaa aaaaaaaaaaaaaa aaaaaaaaaaaaa aaaaaaa aaaaaaaaaaa a aaaaaaaaaaaaaaa aaaaaaaa aaaaaaaaaaa aaaaaaaaaaaaaaaaa aaaaaaaa aaaaaaaaaaaa aaaaaaaaaaaa aaaa aa aaaaaaaaaaaaa aaaaaaaaaa aaaaa aaaaaa aaaaaaaaaaaaaaaaaaa aa aaa aaaaaaaaaaaaa aaa aaaaaa aaaaaaaaaaaaaaaaaaa aaaaa aaaaaaaaaa aaaaaaa aaaaaaaaaaaaaaaaa aaaaaaaaa aaaaaaaaa", 1269, ["aaaaaa aaaaaa aaa aaaaaa aaaaaaaaaaaaaaaaaaaa aaaaa aaaaaaaaaaaaa aaaaaaaaaaaaaaaaaaa aaaa aaaaaaaaaaaaaaa aaaaaaaaa aaaaaaaaa aaaaaaaaaaaa aaaaaaaaaaaaaaa aaaaaaaaaaaaa aaaaaaaaaaaa aaaaaaaaaaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaa aaaa aaaaaaaaaaaaaaaa aaaaaaaaaaaaaaa a aaaaaaaaaaaaaaaaa aaaaaaaaaaaaaa aaaaaaaaa aaaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaa aaa aaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaaa aaaaaaaaaaaaa aaaa aaaaa aaa aa aaaaaaaaaaaaaaaaaaa a aaaaaaaaaaaaaaaa aaaaaaaaaaaa aaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaaa aaaa aaaaaaaaaaa aaaaaaaaaa aaaaaaaaaaaa aaaaaa aaaaaaaaaaaaaaaaaaa aaaaaaaaaaaa aaaa aaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaa aaaaa aaaaaaaaaaaaaaaaaa aaaaa aaaaaaaaaaaaaaaaa a aaaaaaaaaaaaaaaaa aaaaaaaaa aaa aaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaa aaaaaa aaaaaaaaaaaaaaaa aaaaaaaaaaaaaa aaaaaaaaaaaaa aaaaaaa aaaaaaaaaaa a aaaaaaaaaaaaaaa aaaaaaaa aaaaaaaaaaa aaaaaaaaaaaaaaaaa aaaaaaaa aaaaaaaaaaaa aaaaaaaaaaaa aaaa aa aaaaaaaaaaaaa aaaaaaaaaa aaaaa aaaaaa aaaaaaaaaaaaaaaaaaa aa aaa aaaaaaaaaaaaa aaa aaaaaa aaaaaaaaaaaaaaaaaaa aaaaa aaaaaaaaaa aaaaaaa aaaaaaaaaaaaaaaaa aaaaaaaaa aaaaaaaaa<1/1>"]),
