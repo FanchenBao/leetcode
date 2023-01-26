@@ -5,6 +5,21 @@ import math
 
 class Solution:
     def closestMeetingNode(self, edges: List[int], node1: int, node2: int) -> int:
+        """LeetCode 2359
+
+        The fact that each node has at most one outgoing edge means that any
+        node can only be reached by node1 or node2 in a unique path, or not
+        reached at all. Therefore, we can start from node1, traverse the entire
+        path to obtain the unique distance from it to all the nodes accessible
+        to it. We do the same to node2. Any nodes not accessible have the
+        distance set to inf.
+
+        Then, we jsut compare the two distances to each node from node1 and
+        node2, get their max, and find the overall min, along with the node that
+        allows such min.
+
+        O(N), 2369 ms, faster than 27.59%
+        """
         N = len(edges)
         dist1 = [math.inf] * N
         dist2 = [math.inf] * N
