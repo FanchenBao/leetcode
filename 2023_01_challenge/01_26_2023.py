@@ -190,7 +190,25 @@ class Solution6:
         return prices[dst] if prices[dst] < math.inf else -1
 
 
-sol = Solution6()
+class Solution7:
+    def findCheapestPrice(self, n: int, flights: List[List[int]], src: int, dst: int, k: int) -> int:
+        """Bellman Ford from official solution.
+
+        O(K * E + N)
+        """
+        prices = [math.inf] * n
+        prices[src] = 0
+        while k + 1:
+            tmp = [math.inf] * n
+            tmp[src] = 0
+            for a, b, p in flights:
+                tmp[b] = min(tmp[b], prices[b], prices[a] + p)
+            prices = tmp
+            k -= 1
+        return prices[dst] if prices[dst] < math.inf else -1
+
+
+sol = Solution7()
 tests = [
     (4, [[0,1,100],[1,2,100],[2,0,100],[1,3,600],[2,3,200]], 0, 3, 1, 700),
     (3, [[0,1,100],[1,2,100],[0,2,500]], 0, 2, 1, 200),
