@@ -57,6 +57,9 @@ class Solution3:
         highest score so far. Thus to determine whether the current player
         should be chosen, we only need to compare to the score of the previously
         chosen player
+
+        Unfortunately, still cannot do it. TLE.
+        I guess top down is not going to work in Python.
         """
         agescore = sorted((a, s) for a, s in zip(ages, scores))
 
@@ -74,7 +77,27 @@ class Solution3:
         return dp(0, -1)
 
 
-sol = Solution3()
+class Solution4:
+    def bestTeamScore(self, scores: List[int], ages: List[int]) -> int:
+        """Bottom up version of Solution3
+
+        max_score[i] is the max score achieved choosing players from 0 to i
+        (must include i) in agescore 
+        """
+        agescore = sorted((a, s) for a, s in zip(ages, scores))
+        max_score = [0] * len(agescore)
+        for i in range(len(agescore)):  # current index
+            cur_max = agescore[i][1]
+            for j in range(i):  # previously selected index
+                op1 = (max_score[j] + agescore[i][1]) * int(agescore[i][1] >= agescore[j][1])
+                op2 = agescore[i][1]
+                cur_max = max(cur_max, max(op1, op2))
+            max_score[i] = cur_max
+        return max(max_score)
+
+
+
+sol = Solution4()
 tests = [
     ([1,3,5,10,15], [1,2,3,4,5], 34),
     ([4,5,6,5], [2,1,2,1], 16),
