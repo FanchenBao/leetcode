@@ -82,7 +82,9 @@ class Solution4:
         """Bottom up version of Solution3
 
         max_score[i] is the max score achieved choosing players from 0 to i
-        (must include i) in agescore 
+        (must include i) in agescore
+
+        O(N^2), 5609 ms, faster than 13.29%
         """
         agescore = sorted((a, s) for a, s in zip(ages, scores))
         max_score = [0] * len(agescore)
@@ -96,8 +98,70 @@ class Solution4:
         return max(max_score)
 
 
+class BIT:
+    def __init__(self, N: int):
+        """Initialize a binary indexed tree.
 
-sol = Solution4()
+        :param N: The size of the range, including min and max.
+        """
+        # use 1-based BIT, thus array size must be one larger than the range.
+        self.bit = [0] * (N + 1)
+
+    def update(self, pos: int, cur: int) -> None:
+        """Update the value at `pos` by changing it to cur if cur is larger.
+        """
+        # KEY POINT: BIT index is 1-based, thus its index is one larger
+        # than the given position.
+        i = pos + 1
+        while i < len(self.bit):
+            self.bit[i] = max(self.bit[i], cur)
+            i += (i & -i)
+
+    def query(self, max_r: int) -> int:
+        """Query the max values in the range 0 to `max_r`.
+        """
+        # KEY POINT: Bit index is 1-based, thus its index is one larger
+        # than the given max range.
+        i, res = max_r + 1, 0
+        while i:
+            res = max(res, self.bit[i])
+            i -= (i & -i)
+        return res
+
+
+class Solution5:
+    def bestTeamScore(self, scores: List[int], ages: List[int]) -> int:
+        """This is the BIT solution from the official solution.
+
+        We sort based on score first, and then age.
+
+        Then we iterate through scoreage. For each score s and its age a, we
+        want to find the max score that can be obtained by all previous players
+        with age <= a. Since we have sorted by score, it is guaranteed that all
+        previous players have score smaller or equal to s, which means the
+        current player is eligible if all previous players have age smaller or
+        equal to a.
+
+        To find the max of all ages up till a is a BIT problem. Thus, we create
+        a BIT, with the total length being max age + 1. Then for each player
+        (s, a), we get the max score up till a by bit.query(a). We then add s
+        to it to form the current max score up till a. Then we do bit.update(a).
+
+        We record all the max score along the way.
+
+        O(NlogN), 248 ms, faster than 93.95%
+        """
+        min_age, max_age = min(ages), max(ages)
+        bit = BIT(max_age - min_age + 1)
+        res = 0
+        for s, a in sorted((s, a) for a, s in zip(ages, scores)):
+            cur_max = bit.query(a - min_age) + s
+            bit.update(a - min_age, cur_max)
+            res = max(res, cur_max)
+        return res
+
+
+sol = Solution5()
 tests = [
     ([1,3,5,10,15], [1,2,3,4,5], 34),
     ([4,5,6,5], [2,1,2,1], 16),
