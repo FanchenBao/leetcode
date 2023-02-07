@@ -1,44 +1,33 @@
 # from pudb import set_trace; set_trace()
 from typing import List
 import math
+from collection import Counter
 
 
-class Solution1:
-    def reverseVowels(self, s: str) -> str:
-        """LeetCode 345
+class Solution:
+    def findAnagrams(self, s: str, p: str) -> List[int]:
+        """LeetCode 438
 
-        Don't forget to include the upper case as well.
+        Sliding window.
 
-        O(N), 95 ms, faster than 70.04%
+        O(N), where N = len(s), 378 ms, faster than 31.63%
         """
-        lst = list(s)
-        vowels = {'a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U'}
-        vowel_indices = [i for i, a in enumerate(s) if a in vowels]
-        j = len(vowel_indices) - 1
-        for i in vowel_indices:
-            lst[i] = s[vowel_indices[j]]
-            j -= 1
-        return ''.join(lst)
-
-
-class Solution2:
-    def reverseVowels(self, s: str) -> str:
-        """Two pointers directly on s
-        """
-        lst = list(s)
-        vowels = {'a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U'}
-        i, j = 0, len(s) - 1
-        while i < j:
-            if s[i] in vowels and s[j] in vowels:
-                lst[i], lst[j] = lst[j], lst[i]
-                i += 1
-                j -= 1
-            else:
-                if s[i] not in vowels:
-                    i += 1
-                if s[j] not in vowels:
-                    j -= 1
-        return ''.join(lst)
+        M = len(p)
+        if M > len(s):
+            return []
+        cp = Counter(p)
+        cs = Counter(s[:M])
+        res = []
+        if cp == cs:
+            res.append(0)
+        for i in range(M, len(s)):
+            cs[s[i]] += 1
+            cs[s[i - M]] -= 1
+            if not cs[s[i - M]]:
+                del cs[s[i - M]]
+            if cs == cp:
+                res.append(i - M + 1)
+        return res
 
 
 sol = Solution2()
