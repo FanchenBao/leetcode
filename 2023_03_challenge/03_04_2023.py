@@ -3,7 +3,7 @@ from typing import List
 import math
 
 
-class Solution:
+class Solution1:
     def countSubarrays(self, nums: List[int], minK: int, maxK: int) -> int:
         """LeetCode 2444
 
@@ -74,7 +74,31 @@ class Solution:
         return res
 
 
-sol = Solution()
+class Solution2:
+    def countSubarrays(self, nums: List[int], minK: int, maxK: int) -> int:
+        """Inspired by the offical solution.
+
+        O(N), 840 ms, faster than 94.75% 
+        """
+        most_recent_min = most_recent_max = pre = -1  # reset
+        res = 0
+
+        for i, n in enumerate(nums):
+            if minK <= n <= maxK:
+                if pre < 0:
+                    pre = i
+                if n == minK:
+                    most_recent_min = i
+                if n == maxK:
+                    most_recent_max = i
+                if most_recent_max >= 0 and most_recent_min >= 0:
+                    res += min(most_recent_max, most_recent_min) - pre + 1
+            else:
+                most_recent_min = most_recent_max = pre = -1  # reset
+        return res
+
+
+sol = Solution2()
 tests = [
     ([1,3,5,2,7,5], 1, 5, 2),
     ([1,1,1,1], 1, 1, 10),
