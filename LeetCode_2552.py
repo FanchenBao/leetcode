@@ -90,6 +90,41 @@ class Solution2:
         return sum(num_smaller[k][j] * num_larger[j][k] for j in range(1, N - 2) for k in range(j + 1, N - 1) if nums[j] > nums[k])
 
 
+class Solution3:
+    def countQuadruplets(self, nums: List[int]) -> int:
+        """Solution from: https://leetcode.com/problems/count-increasing-quadruplets/discuss/3111697/C%2B%2BorJavaorPython3-Cleanest-DP-with-Clarification-O(n2)
+
+        This is just too rich, too good.
+
+        Let dp[j] be the number of valid triplets i, j, k, such that i < j < k
+        and nums[i] < nums[k] < nums[j], given an l > j.
+
+        Thus, as we iterate j from 0 to l - 1, each time nums[j] < nums[l], we
+        can add dp[j] to the answer.
+
+        Also, we keep track of the number of vals smaller than nums[l] along the
+        way. We use pre_small to keep track of this number.
+        Thus, if nums[j] > nums[l], then the number of valid triplets centering
+        in nums[j] increase by pre_small because we can include nums[l] into the
+        triplet. This is to prepare the DP triplet count for the next round of
+        l.
+
+        O(N^2), 3045 ms, faster than 68.70%
+        """
+        N = len(nums)
+        dp = [0] * N
+        res = 0
+        for l in range(N):
+            pre_small = 0
+            for j in range(l):
+                if nums[j] < nums[l]:
+                    res += dp[j]
+                    pre_small += 1
+                else:
+                    dp[j] += pre_small
+        return res
+
+
 sol = Solution2()
 tests = [
     ([1,3,2,4,5], 2),
