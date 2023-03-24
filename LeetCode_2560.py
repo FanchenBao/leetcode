@@ -5,6 +5,8 @@ import math
 
 class Solution:
     def minCapability(self, nums: List[int], k: int) -> int:
+        """TLE
+        """
         N = len(nums)
         dp = [0] * (N + 1)
         for j in range(1, k + 1):
