@@ -83,8 +83,35 @@ class Solution2:
                 return n
 
 
+class Solution3:
+    def minCapability(self, nums: List[int], k: int) -> int:
+        """Binary search, inspired by lee215: https://leetcode.com/problems/house-robber-iv/discuss/3143697/JavaC%2B%2BPython-Binary-Search-O(1)-Space
 
-sol = Solution2()
+        We directly search for the minimum capability. For a given capability,
+        we want to see if we can rob at least k houses with values smaller or
+        equal to minimum capability. If we can, then we can reduce minimum
+        capability. Otherwise we increase.
+
+        O(NlogM), 1098 ms, faster than 64.27%
+        """
+        lo, hi = min(nums), max(nums)
+        while lo < hi:
+            mid = (lo + hi) // 2
+            pre_rob = -2
+            rob_total = 0
+            for i, n in enumerate(nums):
+                if n <= mid and i - 1 != pre_rob:
+                    rob_total += 1
+                    pre_rob = i
+            if rob_total >= k:
+                hi = mid
+            else:
+                lo = mid + 1
+        return lo
+
+
+
+sol = Solution3()
 tests = [
     ([2,3,5,9], 2, 5),
     ([2,7,9,3,1], 2, 2),
