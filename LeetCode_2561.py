@@ -3,52 +3,22 @@ from typing import List
 import math
 
 
-class Solution1:
-    def reverseVowels(self, s: str) -> str:
-        """LeetCode 345
-
-        Don't forget to include the upper case as well.
-
-        O(N), 95 ms, faster than 70.04%
-        """
-        lst = list(s)
-        vowels = {'a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U'}
-        vowel_indices = [i for i, a in enumerate(s) if a in vowels]
-        j = len(vowel_indices) - 1
-        for i in vowel_indices:
-            lst[i] = s[vowel_indices[j]]
-            j -= 1
-        return ''.join(lst)
+class Solution:
+    def minCost(self, basket1: List[int], basket2: List[int]) -> int:
+        counter = Counter(basket1 + basket2)
+        if any(v % 2 == 1 for v in counter.values()):
+            return -1
 
 
-class Solution2:
-    def reverseVowels(self, s: str) -> str:
-        """Two pointers directly on s
-        """
-        lst = list(s)
-        vowels = {'a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U'}
-        i, j = 0, len(s) - 1
-        while i < j:
-            if s[i] in vowels and s[j] in vowels:
-                lst[i], lst[j] = lst[j], lst[i]
-                i += 1
-                j -= 1
-            else:
-                if s[i] not in vowels:
-                    i += 1
-                if s[j] not in vowels:
-                    j -= 1
-        return ''.join(lst)
-
-
-sol = Solution2()
+sol = Solution()
 tests = [
-    ("hello", "holle"),
-    ("leetcode", "leotcede"),
+    ([4,2,2,2], [1,4,1,2], 1),
+    ([2,3,4,1], [3,2,5,1], -1),
+    ([4,4,4,4,3], [5,5,5,5,3], 8),
 ]
 
-for i, (s, ans) in enumerate(tests):
-    res = sol.reverseVowels(s)
+for i, (basket1, basket2 ans) in enumerate(tests):
+    res = sol.minCost(basket1, basket2)
     if res == ans:
         print(f'Test {i}: PASS')
     else:
