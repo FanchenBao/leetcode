@@ -4,7 +4,7 @@ import math
 from collections import Counter
 
 
-class Solution:
+class Solution1:
     def minCost(self, basket1: List[int], basket2: List[int]) -> int:
         """I am surprised that this method works.
 
@@ -78,8 +78,41 @@ class Solution:
         return res
 
 
+class Solution2:
+    def minCost(self, basket1: List[int], basket2: List[int]) -> int:
+        """Inspired by https://leetcode.com/problems/rearranging-fruits/discuss/3143766/C%2B%2BororJavaororPython3Count-and-match-pairs-O(n)-time-complexity-with-quickselect
 
-sol = Solution()
+        Same idea as Solution1, but we don't have to simulate the swapping. We
+        just need to collect all the values that need to be swapped in a single
+        array, sort it, and treat the first half as costs. We will go through
+        them one by one, and use it if it is smaller than 2 * min_v. Once 2 * 
+        min_v is smaller, we can break and use the min_v for the rest of the
+        swap.
+
+        This way the implementation is much simpler.
+
+        O(NlogN), 814 ms, faster than 91.22%
+        """
+        counter1, counter2 = Counter(basket1), Counter(basket2)
+        counter = counter1 + counter2
+        if any(v % 2 == 1 for v in counter.values()):
+            return -1
+        swap = []
+        for v in counter:
+            if counter1[v] != counter2[v]:
+                swap.extend([v] * abs((counter2[v] - counter1[v]) // 2))
+        swap.sort()
+        min_v = min(counter)
+        res = i = 0
+        while i < len(swap) // 2:
+            if 2 * min_v <= swap[i]:
+                break
+            res += swap[i]
+            i += 1
+        return res + (len(swap) // 2 - i) * 2 * min_v
+
+
+sol = Solution2()
 tests = [
     ([4,2,2,2], [1,4,1,2], 1),
     ([2,3,4,1], [3,2,5,1], -1),
