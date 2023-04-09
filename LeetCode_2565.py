@@ -4,7 +4,7 @@ import math
 from collections import defaultdict, deque
 
 
-class Solution:
+class Solution1:
     def minimumScore(self, s: str, t: str) -> int:
         """Binary search.
 
@@ -73,7 +73,52 @@ class Solution:
         return lo
 
 
-sol = Solution()
+class Solution2:
+    def minimumScore(self, s: str, t: str) -> int:
+        """Sliding window with O(N) complexity.
+
+        Ref: https://leetcode.com/problems/subsequence-with-the-minimum-score/discuss/3174041/Right-and-Left-O(n)
+
+        We do r2l the same way as in solution1. But, then we do l2r and find the
+        result directly.
+
+        Suppose r2l[k] is the final index in s that matches t[k]. Each time in
+        l2r, when s[i] == t[j], we need to see whether i < r2l[k]. If it is,
+        then we can take s[i] == t[j] and move both indices forward (i.e.
+        shrinking the window). However, if i >= r2l[k], then k needs to move
+        forward until i < r2l[k] (i.e., broadening the window).
+
+        O(N), 160 ms, faster than 78.46%
+        """
+        M, N = len(s), len(t)
+        r2l = [-1] * N
+        i, k = M - 1, N - 1
+        while i >= 0 and k >= 0:
+            if s[i] == t[k]:
+                r2l[k] = i
+                i -= 1
+                k -= 1
+            else:
+                i -= 1
+        k += 1  # r2l[k] points to the final index in s that matches t[k]
+        if k == 0:  # t is already a subsequence of s
+            return 0
+        i = j = 0
+        res = k
+        while i < M and j < N:
+            if s[i] == t[j]:
+                while k < N and r2l[k] <= i:
+                    k += 1
+                # print(i, j, k)
+                res = min(res, k - j - 1)
+                i += 1
+                j += 1
+            else:
+                i += 1
+        return res
+
+
+sol = Solution2()
 tests = [
     ("abacaba", "bzaa", 1),
     ("cde", "xyz", 3),
