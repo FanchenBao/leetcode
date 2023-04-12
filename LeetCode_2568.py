@@ -3,7 +3,7 @@ from typing import List
 import math
 
 
-class Solution:
+class Solution1:
     def minImpossibleOR(self, nums: List[int]) -> int:
         """Sort nums first. For any instance where nums[i] - nums[i - 1] > 1,
         we can compute the largest possible integers that can be formed by all
@@ -31,7 +31,28 @@ class Solution:
         return 1 << len(bin(nums[-1])[2:])
 
 
-sol = Solution()
+class Solution2:
+    def minImpossibleOR(self, nums: List[int]) -> int:
+        """From lee215: https://leetcode.com/problems/minimum-impossible-or/discuss/3201897/JavaC%2B%2BPython-Pow-of-2
+
+        I didn't notice, but the answer to the problem is always going to be
+        power of two. We have already done it, when we say the smallest integer
+        that cannot be formed by a series of consecutive integers is to fill
+        all the binary positions of the largest consecutive integer with 1, and
+        then plus 1. That would give us a power of 2.
+
+        Hence, the problem is akin to finding the first power of 2 that does not
+        exist in nums
+
+        O(31N), 450 ms, faster than 75.28%
+        """
+        nums_set = set(nums)
+        for i in range(31):
+            if (1 << i) not in nums_set:
+                return 1 << i
+
+
+sol = Solution2()
 tests = [
     ([1,25,2,72], 4),
     ([5,3,2], 1),
