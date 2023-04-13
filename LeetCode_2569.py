@@ -6,6 +6,10 @@ import numpy as np
 
 class Solution:
     def handleQuery(self, nums1: List[int], nums2: List[int], queries: List[List[int]]) -> List[int]:
+        """Numpy cheating solution works! Surprise surprise.
+
+        9652 ms, faster than 5.04% 
+        """
         nums1 = np.array(nums1)
         nums2 = np.array(nums2)
         res = []
