@@ -1,10 +1,10 @@
 # from pudb import set_trace; set_trace()
 from typing import List
 import math
-from collections import defaultdict
+from collections import defaultdict, Counter
 
 
-class Solution:
+class Solution1:
     def factor(self, n: int, primes: List[int]) -> int:
         res = 0
         i = 0
@@ -48,7 +48,29 @@ class Solution:
         return sum(dp) % MOD
 
 
-sol = Solution()
+class Solution2:
+    def squareFreeSubsets(self, nums: List[int]) -> int:
+        """Inspired by https://leetcode.com/problems/count-the-number-of-square-free-subsets/discuss/3203905/Python3-DFS-%2B-GCD-Solution-or-70ms-(Beats-100)
+
+        Very fast. 163 ms, faster than 63.30%
+        """
+        base = [2, 3, 5, 6, 7, 10, 11, 13, 14, 15, 17, 19, 21, 22, 23, 26, 29, 30]
+        counter = Counter(nums)  # get unique counts of elements in nums
+        MOD = 10**9 + 7
+
+        def helper(lst: List[int]) -> int:
+            """Find the number of square-free subsets in lst"""
+            if not lst:
+                return 1  # empty set
+            next_lst = [ele for ele in lst if math.gcd(ele, lst[0]) == 1]
+            return (helper(lst[1:]) + counter[lst[0]] * helper(next_lst)) % MOD
+
+        # Note that helper will work on an empty set, so its result must be
+        # deducted
+        return (helper(base) * 2**counter[1] - 1) % MOD
+
+
+sol = Solution2()
 tests = [
     ([3,4,4,5], 3),
     ([1], 1),
