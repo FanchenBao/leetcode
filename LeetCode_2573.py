@@ -1,6 +1,7 @@
 # from pudb import set_trace; set_trace()
 from typing import List
 import math
+import string
 
 
 
@@ -18,6 +19,35 @@ class Solution:
             for j in range(i + 1, N):
                 if lcp[i][j] != lcp[j][i] or lcp[i][j] > N - j or lcp[j][i] > N - i:
                     return ''
+
+        def dp(j: int) -> bool:
+            if j == N:
+                return True
+            for i in range(j):
+                if lcp[i][j] > 0:  # match
+                    if i!= 0 and
+                    for k in range(lcp[i][j]):
+                        if res[j + k] == '':
+                            res[j + k] = res[i + k]
+                        elif res[j + k] != res[i + k]:
+                            return False
+                else:  # mismatch
+                    if res[j] != '' and res[j] == res[i]:
+                        return False
+                    if res[j] == '':
+                        # try every letter
+                        for le in string.ascii_lowercase:
+                            if le != res[i]:
+                                res[j] = le
+                                if dp(j + 1):  # success
+                                    break
+                                res[j] = ''  # backtrack
+                        else:
+                            # has tried every letter but still fail
+                            return False
+                        break
+
+
         # examine lcp diagonally from top left to bottom right. 
         for k in range(1, N):
             for i in range(N - k):
