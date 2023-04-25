@@ -132,7 +132,35 @@ class Solution3:
         return dp(0)
 
 
-sol = Solution3()
+class Solution4:
+    def numberOfArrays(self, s: str, k: int) -> int:
+        """Bottom up, do not do int(str) to obtain a number for comparison with
+        k. Do it iteratively.
+
+        O(NlogK), 1804 ms, faster than 40.26%
+        """
+        MOD = 10**9 + 7
+        s = s.lstrip('0')
+        k_dig = len(str(k))
+        dp = [0] * (1 + len(s))
+        dp[0] = 1
+        for i in range(len(s)):
+            acc = 0
+            tens = 1
+            for j in range(i, max(-1, i - k_dig), -1):
+                cur = int(s[j])
+                if cur:
+                    acc = cur * tens + acc
+                    if acc <= k:
+                        dp[i + 1] = (dp[i + 1] + dp[j]) % MOD
+                    else:
+                        break
+                tens *= 10
+            
+        return dp[-1]
+
+
+sol = Solution4()
 tests = [
     ('1000', 10000, 1),
     ('1000', 10, 0),
