@@ -29,7 +29,7 @@ class DSU:
         return False
 
 
-class Solution:
+class Solution1:
     def findTheString(self, lcp: List[List[int]]) -> str:
         """The hint helps a lot. It points to the direction of union find. We
         first use union find to identify which positions share the same letter.
@@ -88,12 +88,47 @@ class Solution:
                     return ''
         return ''.join(res)
 
-        
+
+class Solution2:
+    def findTheString(self, lcp: List[List[int]]) -> str:
+        """Same idea as Solution1, but without using union-find.
+
+        For each lcp[i], we can identify all the positions in the result that
+        share the same letter as res[i]. Then as we go through lcp row by row,
+        we will fill out res, and at the same time check whether the already
+        filled positions match the future requirements.
+
+        O(N^2), 1954 ms, faster than 99.55%
+        """
+        N = len(lcp)
+        res = [''] * N
+        le = 97
+        # find the smallest string that satisfies lcp. Also, we conduct some
+        # validation.
+        for i in range(N):
+            if not res[i]:
+                if le > 122:  # impossible case because we go beyond "z"
+                    return ''
+                res[i] = chr(le)
+                le += 1
+            for j in range(i + 1, N):
+                if lcp[i][j]:
+                    if not res[j]:
+                        res[j] = res[i]
+                    elif res[j] != res[i]:
+                        return ''
+        # recreate lcp and check with the original lcp
+        for k in range(N):
+            acc = 0
+            for i in range(N - k - 1, -1, -1):
+                j = i + k
+                acc = 0 if res[i] != res[j] else acc + 1
+                if acc != lcp[i][j] or acc != lcp[j][i]:
+                    return ''
+        return ''.join(res)
 
 
-
-
-sol = Solution()
+sol = Solution2()
 tests = [
     ([[4,0,2,0],[0,3,0,1],[2,0,2,0],[0,1,0,1]], 'abab'),
     ([[4,3,2,1],[3,3,2,1],[2,2,2,1],[1,1,1,1]], 'aaaa'),
