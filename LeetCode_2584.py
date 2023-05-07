@@ -4,7 +4,7 @@ import math
 from collections import Counter
 
 
-class Solution:
+class Solution1:
     def __init__(self) -> None:
         self.primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211, 223, 227, 229, 233, 239, 241, 251, 257, 263, 269, 271, 277, 281, 283, 293, 307, 311, 313, 317, 331, 337, 347, 349, 353, 359, 367, 373, 379, 383, 389, 397, 401, 409, 419, 421, 431, 433, 439, 443, 449, 457, 461, 463, 467, 479, 487, 491, 499, 503, 509, 521, 523, 541, 547, 557, 563, 569, 571, 577, 587, 593, 599, 601, 607, 613, 617, 619, 631, 641, 643, 647, 653, 659, 661, 673, 677, 683, 691, 701, 709, 719, 727, 733, 739, 743, 751, 757, 761, 769, 773, 787, 797, 809, 811, 821, 823, 827, 829, 839, 853, 857, 859, 863, 877, 881, 883, 887, 907, 911, 919, 929, 937, 941, 947, 953, 967, 971, 977, 983, 991, 997]
     
@@ -63,9 +63,63 @@ class Solution:
             if not key_primes:
                 return i
         return -1
-        
 
-sol = Solution()
+
+class Solution2:
+    def __init__(self) -> None:
+        self.primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211, 223, 227, 229, 233, 239, 241, 251, 257, 263, 269, 271, 277, 281, 283, 293, 307, 311, 313, 317, 331, 337, 347, 349, 353, 359, 367, 373, 379, 383, 389, 397, 401, 409, 419, 421, 431, 433, 439, 443, 449, 457, 461, 463, 467, 479, 487, 491, 499, 503, 509, 521, 523, 541, 547, 557, 563, 569, 571, 577, 587, 593, 599, 601, 607, 613, 617, 619, 631, 641, 643, 647, 653, 659, 661, 673, 677, 683, 691, 701, 709, 719, 727, 733, 739, 743, 751, 757, 761, 769, 773, 787, 797, 809, 811, 821, 823, 827, 829, 839, 853, 857, 859, 863, 877, 881, 883, 887, 907, 911, 919, 929, 937, 941, 947, 953, 967, 971, 977, 983, 991, 997]
+    
+    def factor(self, n: int) -> List[int]:
+        primes = []
+        lim = int(math.sqrt(n)) + 1
+        for p in self.primes:
+            if n == 1 or p >= lim:
+                break
+            if n % p == 0:
+                primes.append(p)
+                while n % p == 0:
+                    n //= p
+        if n > 1:
+            primes.append(n)
+        return primes
+
+    def findValidSplit(self, nums: List[int]) -> int:
+        """Inspired by https://leetcode.com/problems/split-the-array-to-make-coprime-products/discuss/3258070/Prime-Intervals-vs.-Count-Primes
+
+        The key idea is to find all the intervals [i, j], such that nums[i] and
+        nums[j] share at least one prime. Then, any splitting point within
+        [i, j) will NOT lead to co-prime. After finding all the intervals, we
+        just need to locate the first index that is NOT in any of the intervals.
+        This can be solved using the same approach as finding overlapping
+        intervals, or what the author of the post called line sweep method. We
+        increment on the beginning of each interval, and decrement on the end
+        of each interval. Then in a prefix sum, the first position that
+        evaluates to 0 is the first index that is outside any intervals.
+
+        O(NlogN), 950 ms, faster than 84.25%
+
+        Dear Lord! It is a 10x speed up.
+        """
+        lines = [0] * len(nums)
+        first_index_of_factor = {}
+        for i, n in enumerate(nums):
+            # we consider n to be the end of an interval, then we obtain the
+            # start position of the interval via first_index_of_factor for each
+            # prime factor
+            for f in self.factor(n):
+                if f not in first_index_of_factor:
+                    first_index_of_factor[f] = i
+                lines[first_index_of_factor[f]] += 1  # increment on start
+                lines[i] -= 1  # decrement on end
+        ps = 0
+        for i, l in enumerate(lines):
+            ps += l
+            if ps == 0:
+                break
+        return i if i < len(nums) - 1 else -1
+
+
+sol = Solution2()
 tests = [
     ([4,7,8,15,3,5], 2),
     ([4,7,15,8,3,5], -1),
