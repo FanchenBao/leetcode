@@ -5,74 +5,78 @@ import heapq
 from collections import defaultdict
 
 
-class Solution:
+class Solution1:
     def findMinimumTime(self, tasks: List[List[int]]) -> int:
-        heap = []
-        starts = defaultdict(set)
-        ends = defaultdict(set)
-        task_durs = {}
-        for i, (s, e, d) in enumerate(tasks):
-            starts[s].add(i)
-            ends[e].add(i)
-            task_durs[i] = d
+        """HINT
 
-        def get_min_task_length(_tasks, s: int) -> int:
-            res = math.inf
-            for task in _tasks:
-                e = tasks[task][1]
-                allowed = e - s + 1
-                res = min(res, min(task_durs[task], allowed))
-            return res
+        The hint works marvelously! Sort the tasks by end time. We start from
+        the task with the earliest end time. To maximize parallel work, we want
+        to draw a line from the first task's end time through all the other
+        tasks. Any task that gets crossed by this line can be paralleled with
+        the first task. Then we check the seocnd to the end time of the first
+        task and do exactly the same thing. We try to maximize parallelism for
+        the first task until the first task is done.
 
-        overlap = set()
-        for t in range(1, 2001):
-            if t in ends:
-                heapq.heappush(
-                    heap,
-                    (-len(overlap), -get_min_task_length(overlap, t), t, list(overlap)),
-                )
-                overlap = overlap - ends[t]
-            if t in starts:
-                overlap = overlap.union(starts[t])
-                heapq.heappush(
-                    heap,
-                    (-len(overlap), -get_min_task_length(overlap, t), t, list(overlap)),
-                )
+        Then we start from the second task and repeat the same procedure.
 
-        res = 0
-        while task_durs:
-            _, _, t, _tasks = heapq.heappop(heap)
-            new_tasks = [task for task in _tasks if task in task_durs]
-            if not new_tasks:
-                continue
-            if len(new_tasks) != len(_tasks):
-                heapq.heappush(
-                    heap,
-                    (-len(new_tasks), -get_min_task_length(new_tasks, t), t, new_tasks)
-                )
-            else:
-                d = -get_min_task_length(_tasks, t)
-                rem_tasks = []
-                for task in list(task_durs.keys()):
-                    task_durs[task] -= d
-                    if not task_durs[task]:
-                        del task_durs[task]
-                    else:
-                        rem_tasks.append(task)
-                res += d
-                if rem_tasks:
-                    heapq.heappush(
-                        heap,
-                        (-len(rem_tasks), -get_min_task_length(rem_tasks, t + d), t + d, rem_tasks)
-                    )
-        return res
+        One thing to note is that each second can only be consumed once. Thus
+        we use a set to keep track of all the seconds consumed. The final
+        solution is the length of the consumed set.
+
+        O(NlogN + N^2 * T), where N = len(tasks), T is the average length of
+        each task. 3461 ms, faster than 5.76%
+        """
+        tasks.sort(key=lambda tup: tup[1])
+        consumed = set()
+        # print(tasks)
+        for i in range(len(tasks)):
+            # print(consumed)
+            t = tasks[i][1]
+            while tasks[i][2]:
+                if t not in consumed:
+                    consumed.add(t)
+                    for j in range(i, len(tasks)):
+                        if tasks[j][0] <= t <= tasks[j][1] and tasks[j][2]:
+                            tasks[j][2] -= 1
+                t -= 1
+        return len(consumed)
 
 
+class Solution2:
+    def findMinimumTime(self, tasks: List[List[int]]) -> int:
+        """Ref: https://leetcode.com/problems/minimum-time-to-complete-all-tasks/discuss/3286244/Number-Line
 
-sol = Solution()
+        I think this is exactly the same idea as Solution1, but seems to have
+        a better implementation.
+
+        1010 ms, faster than 69.05%
+        """
+        consumed = [0] * 2001
+        tasks.sort(key=lambda tup: tup[1])
+        for s, e, d in tasks:
+            # check if any time points have been consumed. If so, we can deduct
+            # from the current task's duration, because when that time point has
+            # been consumed previously, the current task could have been done
+            # in parallel as well.
+            for i in range(s, e + 1):
+                if not d:
+                    break
+                d -= consumed[i]
+            t = e
+            while d:
+                if not consumed[t]:
+                    consumed[t] = 1
+                    d -= 1
+                t -= 1
+        return sum(consumed)
+
+
+sol = Solution2()
 tests = [
     ([[2,3,1],[4,5,1],[1,5,2]], 2),
-    # ([[1,3,2],[2,5,3],[5,6,2]], 4),
+    ([[1,3,2],[2,5,3],[5,6,2]], 4),
+    ([[2,8,2],[4,20,7],[8,20,2]], 7),
+    ([[10,16,3],[10,20,5],[1,12,4],[8,11,2]], 6),
 ]
 
 for i, (tasks, ans) in enumerate(tests):
