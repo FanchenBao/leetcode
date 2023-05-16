@@ -2,9 +2,10 @@
 from typing import List
 import math
 from collections import defaultdict, Counter
+from functools import lru_cache
 
 
-class Solution:
+class Solution1:
     def maxScore(self, nums: List[int]) -> int:
         """LeetCode 1799
 
@@ -57,7 +58,31 @@ class Solution:
         return self.res
 
 
-sol = Solution()
+class Solution2:
+    def maxScore(self, nums: List[int]) -> int:
+        """Use bitmask to represent the state of the numbers that have been used
+        This way, we can memoize the results of a state that have been solved
+        previously. We basically go through all possible combinations to find
+        the largest score.
+
+        O(2^N * N^2 * log(A)), where N = len(nums), 2818 ms, faster than 37.98%
+        """
+        N = len(nums)
+
+        @lru_cache(maxsize=None)
+        def dp(state: int, op: int) -> int:
+            res = 0
+            for i in range(N):
+                for j in range(i + 1, N):
+                    to_take = (1 << i) | (1 << j)
+                    if state & to_take == 0:
+                        res = max(res, op * math.gcd(nums[i], nums[j]) + dp(state | to_take, op + 1))
+            return res
+
+        return dp(0, 1)
+
+
+sol = Solution2()
 tests = [
     ([1, 2], 1),
     ([3, 4, 6, 8], 11),
