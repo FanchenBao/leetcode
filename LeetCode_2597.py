@@ -7,20 +7,15 @@ from collections import Counter
 class Solution:
     def beautifulSubsets(self, nums: List[int], k: int) -> int:
         nums.sort()
-        presum = [0]
-        for i, n in enumerate(nums):
-            j = i - 1
-            while j >= 0 and nums[j] == n - k:
-                j -= 1
-            presum.append(presum[-1] + 1 + presum[j + 1] * int(j >= 0))
-        return presum[-1]
+        
         
 
 sol = Solution()
 tests = [
-    ([2,4,6], 2, 4),
-    ([1], 1, 1),
-    ([4,2,5,9,10,3], 1, 23),
+    # ([2,4,6], 2, 4),
+    # ([1], 1, 1),
+    # ([4,2,5,9,10,3], 1, 23),
+    ([10,4,5,7,2,1], 3, 23),
 ]
 
 for i, (nums, k, ans) in enumerate(tests):
