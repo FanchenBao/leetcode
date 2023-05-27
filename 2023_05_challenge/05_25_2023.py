@@ -3,7 +3,7 @@ from typing import List
 import math
 
 
-class Solution:
+class Solution1:
     def new21Game(self, n: int, k: int, maxPts: int) -> float:
         """LeetCode 837
 
@@ -47,10 +47,34 @@ class Solution:
                 return presum[i] - presum[k - 1]
         return presum[-1] - presum[k - 1]
 
+
+class Solution2:
+    def new21Game(self, n: int, k: int, maxPts: int) -> float:
+        """This is my version of converting the naive O(N * maxPts) solution
+        from the official solution.
+
+        It's still quite a struggle to get the indices correct during presum.
+
+        O(N), 171 ms, faster than 6.96%
+        """
+        presum = [0, 1]  # presum[i] is the sum of prob from 0 to i - 1
+        # Also set up presum[1] = 1 means the prob of getting 1 - 1 = 0 is 1.
+        for i in range(1, n + 1):  # find the prob of getting exactly i
+            if k - 1 + maxPts < i:
+                # the max we can use in previous formation is k - 1. The max we
+                # can take is maxPts. It k - 1 + maxPts < i, we cannot make i
+                break
+            # we can take previously made probability from max(0, i - maxPts)
+            # to min(k - 1, i - 1). Use prefix sum to get the sum of all these
+            # probs
+            cur = (presum[min(k - 1, i - 1) + 1] - presum[max(0, i - maxPts)]) / maxPts
+            presum.append(presum[-1] + cur)
+        return presum[-1] - presum[k]
+
         
         
 
-sol = Solution()
+sol = Solution2()
 tests = [
     (10, 1, 10, 1.00),
     (6, 1, 10, 0.600),
