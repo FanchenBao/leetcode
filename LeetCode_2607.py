@@ -88,7 +88,9 @@ class Solution3:
         return sum(abs(a - median) for a in arr)
 
     def makeSubKSumEqual(self, arr: List[int], k: int) -> int:
-        """Not using Union-Find. Just find all i, i + k, i + 2k, ...
+        """Not using Union-Find. Just find all i, (i + k) % N, (i + 2k) % N, ...
+
+        1039 ms, faster than 36.77%
         """
         N = len(arr)
         res = 0
