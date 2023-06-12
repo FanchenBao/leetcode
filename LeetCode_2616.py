@@ -80,10 +80,49 @@ class Solution3:
             else:
                 lo = mid + 1
         return lo
-        
 
 
-sol = Solution3()
+class Solution4:
+    def minimizeMax(self, nums: List[int], p: int) -> int:
+        """We do not have to sort based on diff, nor do we have to do an
+        additional binary search. We simply sort nums, and go from left to right
+        and find the total number of pairs whose diff is smaller or equal to
+        the current mid. Greedy is used here, in that we always record the first
+        pair that satisfies our requirement. It does not matter if picking the
+        first pair would preclude us from picking the immediate next pair that
+        shares the value with the previous pair, because among these two pairs,
+        we can only get one.
+
+        E.g.: a0, a1, a2. If a1 - a0 and a2 - a1 are both valid, we can either
+        pick (a0, a1) or (a1, a2). So which one we pick does not matter in the
+        final count. Therefore, we can always pick (a0, a1), and that will make
+        the implementation very easy.
+
+        O(Nlog(max(nums))), 1527 ms, faster than 17.81%
+        """
+        if p == 0:
+            return 0
+        nums.sort()
+        N = len(nums)
+        lo, hi = 0, nums[-1] + 1
+        while lo < hi:
+            mid = (lo + hi) // 2
+            num_pairs = i = 0
+            while i < N - 1:
+                if nums[i + 1] - nums[i] <= mid:  # take pair (i, i + 1)
+                    num_pairs += 1
+                    # we increment i an additional time to avoid picking i + 1
+                    # in the next round. This is the key step of the algo
+                    i += 1
+                i += 1  # we always increment i
+            if num_pairs >= p:
+                hi = mid
+            else:
+                lo = mid + 1
+        return lo
+
+
+sol = Solution4()
 tests = [
     ([10,1,2,7,1,3], 2, 1),
     ([4,2,1,2], 1, 0),
