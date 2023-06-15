@@ -2,6 +2,7 @@
 from typing import List
 import math
 from collections import defaultdict
+from sortedcontainers import SortedList
 
 
 class MinSegTree:
@@ -146,7 +147,92 @@ class Solution2:
         return res if res < math.inf else -1
 
 
-sol = Solution()
+class Solution3:
+    def minimumVisitedCells(self, grid: List[List[int]]) -> int:
+        """BFS as the base method, and use SortedList to reduce the search space
+        efficiently. This is the second time in a ROW that we have seen the
+        application of SortedList as a way to reduce search space. This owing to
+        its fast indexing and removal while maintaining the sorted order of the
+        underlying list. It's just a wrapper of a cleverly implemented self-
+        balancing binary search tree.
+
+        O(MNlog(max(M, N))), 9172 ms, faster than 10.72%
+        """
+        M, N = len(grid), len(grid[0])
+        unused_rows = [SortedList(range(N)) for _ in range(M)]
+        unused_cols = [SortedList(range(M)) for _ in range(N)]
+        queue = [(0, 0)]
+        steps = 0
+        while queue:
+            tmp = []
+            for i, j in queue:
+                if i == M - 1 and j == N - 1:
+                    return steps + 1
+                for k in list(unused_rows[i].irange(j + 1, min(j + grid[i][j], N - 1))):
+                    tmp.append((i, k))
+                    unused_rows[i].remove(k)
+                for k in list(unused_cols[j].irange(i + 1, min(i + grid[i][j], M - 1))):
+                    tmp.append((k, j))
+                    unused_cols[j].remove(k)
+            queue = tmp
+            steps += 1
+        return -1
+
+
+class DSU:
+    def __init__(self, N: int) -> None:
+        self.par = list(range(N))
+        # no need to set up rank, because all the unioned elements must point to
+        # the largest member
+
+    def find(self, x: int) -> int:
+        if self.par[x] != x:
+            self.par[x] = self.find(self.par[x])
+        return self.par[x]
+
+    def union(self, x: int, y: int) -> None:
+        px, py = self.find(x), self.find(y)
+        if px < py:
+            self.par[px] = py
+        else:
+            self.par[py] = px
+
+
+class Solution4:
+    def minimumVisitedCells(self, grid: List[List[int]]) -> int:
+        """Union Find. Use Union Find to quickly identify what the next unused
+        index is for each row and col. Within each row and col, all the used
+        indices are grouped together.
+
+        Used the implementation from https://leetcode.com/problems/minimum-number-of-visited-cells-in-a-grid/discuss/3397126/BFS-%2B-DSU-keep-tracking-the-next-point
+        regarding how to find the next index for each row and col
+
+        7608 ms, faster than 61.43% 
+        """
+        M, N = len(grid), len(grid[0])
+        used_rows = [DSU(N) for _ in range(M)]
+        used_cols = [DSU(M) for _ in range(N)]
+        queue = [(0, 0)]
+        steps = 0
+        while queue:
+            tmp = []
+            for i, j in queue:
+                if i == M - 1 and j == N - 1:
+                    return steps + 1
+                while used_rows[i].find(j) < min(j + grid[i][j], N - 1):
+                    k = used_rows[i].find(j) + 1
+                    tmp.append((i, k))
+                    used_rows[i].union(j, k)
+                while used_cols[j].find(i) < min(i + grid[i][j], M - 1):
+                    k = used_cols[j].find(i) + 1
+                    tmp.append((k, j))
+                    used_cols[j].union(i, k)
+            queue = tmp
+            steps += 1
+        return -1
+
+
+sol = Solution4()
 tests = [
     ([[3,4,2,1],[4,2,3,1],[2,1,0,0],[2,4,0,0]], 4),
     ([[3,4,2,1],[4,2,1,1],[2,1,1,0],[3,4,1,0]], 3),
