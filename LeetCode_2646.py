@@ -34,15 +34,24 @@ class Solution:
 
         for root in trip_dicts:
             dfs(root, root, set())
-        # greedy, slashing the nodes with the highest impact possible
-        res = sum(price[n] * c for n, c in required_nodes.items())
-        forbidden = set()
-        for impact, node in sorted([(c * price[n], n) for n, c in required_nodes.items()], reverse=True):
-            if node not in forbidden:
-                res -= impact // 2
-                for child in graph[node]:
-                    forbidden.add(child)
-        return res
+        
+        memo = {}
+        def dp(node: int, slashed: bool, par: int) -> int:
+            if (node, slashed) not in memo:
+                memo[(node, slashed)] = 0
+                if slashed:
+                    for child in graph[node]:
+                        if child != par:
+                            memo[(node, slashed)] += dp(child, False, node)
+                    memo[(node, slashed)] += required_nodes[node] * price[node] // 2
+                else:
+                    for child in graph[node]:
+                        if child != par:
+                            memo[(node, slashed)] += min(dp(child, True, node), dp(child, False, node))
+                    memo[(node, slashed)] += required_nodes[node] * price[node] 
+            return memo[(node, slashed)]
+
+        return min(dp(0, True, -1), dp(0, False, -1))
 
 
 sol = Solution()
