@@ -6,6 +6,20 @@ from collections import defaultdict, Counter
 
 class Solution:
     def minimumTotalPrice(self, n: int, edges: List[List[int]], price: List[int], trips: List[List[int]]) -> int:
+        """We got everything until the last step. We have figured out the total
+        number of nodes involved in the final paths. Thus, the only issue is
+        which nodes to slash in half and which not. I was thinking about greedy,
+        but apparently it didn't work. I also thought about backtracking, which
+        worked but had complexity of 2^N.
+
+        What I didn't realize is that we can move the slash or not slash part
+        into the state. Thus, the state becomes node and whether it is slashed.
+        In addition, we also traverse the entire tree to find dp(node, slashed)
+        as the min price of the nodes in the subtree rooted at node. This way
+        we can reuse the computation performed previously.
+        
+        O(NM), where M is the number of trips. 304 ms, faster than 37.92%
+        """
         graph = defaultdict(list)
         for a, b in edges:
             graph[a].append(b)
