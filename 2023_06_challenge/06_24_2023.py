@@ -1,5 +1,5 @@
 # from pudb import set_trace; set_trace()
-from typing import List
+from typing import List, Dict
 import math
 from functools import lru_cache
 from collections import Counter, defaultdict
@@ -66,8 +66,49 @@ class Solution2:
         return dp[0]
 
 
+class Solution3:
+    def tallestBillboard(self, rods: List[int]) -> int:
+        """This is inspired by the official solution of Meet in the Middle.
 
-sol = Solution2()
+        We brute force half of rods to find all possible sizes of the two
+        combined rods. This will take O(3^N), because each individual rod can
+        either be placed to the left pole, right pole, or not used. We can use
+        a backtracking algo to find all possible left and right pole heights.
+
+        To record all these pole hights, we employ diff between the two poles
+        as the key, and the value is the highest pole with such diff. The reason
+        of using diff is that for the two halfs to combine and produce two poles
+        with the same hight, the poles on the two halves must share the same
+        diff.
+
+        O(2 * 3^(N / 2) + DIFF), 2856 ms, faster than 5.27%
+        """
+
+        def gen_pole_heights(idx: int, idx_lim: int, left: int, right: int, d: Dict[int, int]) -> None:
+            if idx > idx_lim:
+                d[abs(left - right)] = max(d[abs(left - right)], max(left, right))
+            else:
+                # put rods[idx] to the left pole
+                gen_pole_heights(idx + 1, idx_lim, left + rods[idx], right, d)
+                # put rods[idx] to the right pole
+                gen_pole_heights(idx + 1, idx_lim, left, right + rods[idx], d)
+                # do not use rods[idx]
+                gen_pole_heights(idx + 1, idx_lim, left, right, d)
+
+
+        l_dict = defaultdict(int)
+        r_dict = defaultdict(int)
+        gen_pole_heights(0, len(rods) // 2, 0, 0, l_dict)
+        gen_pole_heights(len(rods) // 2 + 1, len(rods)  - 1, 0, 0, r_dict)
+
+        res = l_dict[0]
+        for diff, taller in l_dict.items():
+            if r_dict[diff]:
+                res = max(res, taller + r_dict[diff] - diff)
+        return res
+
+
+sol = Solution3()
 tests = [
     ([1,2,3,6], 6),
     ([1,2,3,4,5,6], 10),
@@ -76,6 +117,7 @@ tests = [
     ([102,101,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100], 900),
     ([518,99,365,338,800,869,917,386,129,382,116], 2219),
     ([3,4,3,3,2], 6),
+    ([100,100], 100),
 ]
 
 for i, (rods, ans) in enumerate(tests):
