@@ -5,26 +5,35 @@ import math
 
 class Solution:
     def minOperations(self, nums: List[int]) -> int:
+        """This is O(N^2), not the O(N) alluded in the question, and definitely
+        not the O(1) hinted. But this is the best I can get at the moment. The
+        idea is to continuously produce gcd for each adjacent pair, until a
+        gcd of 1 shows up.
+
+        62 ms, faster than 37.77%
+        """
         num_ones = nums.count(1)
         if num_ones > 0:
             return len(nums) - num_ones
-        res = math.inf
-        for i in range(1, len(nums) - 1):
-            l = math.gcd(nums[i - 1], nums[i])
-            r = math.gcd(nums[i], nums[i + 1])
-            if l == 1 or r == 1:
-                res = len(nums)
-            if math.gcd(l, r) == 1:
-                res = min(res, len(nums) + 1)
-        return res if res < math.inf else -1
+        queue = nums
+        steps = 0
+        while queue:
+            tmp = []
+            for i in range(len(queue) - 1):
+                tmp.append(math.gcd(queue[i], queue[i + 1]))
+                if tmp[-1] == 1:
+                    return steps + len(nums)
+            queue = tmp
+            steps += 1
+        return -1
         
 
 sol = Solution()
 tests = [
-    # ([2,6,3,4], 4),
-    # ([2,10,6,14], -1),
-    # ([1,1], 0),
-    # ([6,10,15], 4),
+    ([2,6,3,4], 4),
+    ([2,10,6,14], -1),
+    ([1,1], 0),
+    ([6,10,15], 4),
     ([10,5,10,30,70,4,2,6,8,4], 13),
 ]
 
