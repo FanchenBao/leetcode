@@ -3,7 +3,7 @@ from typing import List
 import math
 
 
-class Solution:
+class Solution1:
     def smallestBeautifulString(self, s: str, k: int) -> str:
         """We go from right to left. Suppose we are currently at position s[i],
         the pattern of s[i + 1:] is deterministic depending on what s[i] and
@@ -17,16 +17,22 @@ class Solution:
         which triplet we shall use. Say we have determined that cur is a valid
         letter for s[i], then
 
-        If cur == 'b' (note that cur can never be 'a'):
-            if s[i - 1] == 'a':
-                triplet = 'cab'
-            else:
+        if i - 1 < 0:
+            if cur == 'b'  (note that cur can never be 'a'):
                 triplet = 'acb'
-        else:
-            if s[i - 1] == 'a':
-                triplet = 'bac'
             else:
                 triplet = 'abc'
+        else:
+            if cur == 'b':
+                if s[i - 1] == 'a':
+                    triplet = 'cab'
+                else:
+                    triplet = 'acb'
+            else:
+                if s[i - 1] == 'a':
+                    triplet = 'bac'
+                else:
+                    triplet = 'abc'
 
         But before we can follow this rule, we have to make sure cur is valid.
         To make cur valid, we don't have to check the pattern on the right,
@@ -43,7 +49,7 @@ class Solution:
         The final solution is to combine all these if-else together and
         implement a mechanism to increment cur if it fails.
 
-        O(N * K), 355 ms, faster than 90.58%
+        O(N * K), 287 ms, faster than 99.28%
         """
         N = len(s)
         for i in range(N - 1, -1, -1):
@@ -75,7 +81,77 @@ class Solution:
         return ''
 
 
-sol = Solution()
+class Solution2:
+    def smallestBeautifulString(self, s: str, k: int) -> str:
+        """Inspired by votrubac https://leetcode.com/problems/lexicographically-smallest-beautiful-string/discuss/3468265/Weird-Problem
+
+        His solution also goes right to left. At each position, we check whether
+        the current letter is valid. If not valid, we increment it, until we
+        can't, at which time we move to the previous letter.
+
+        The check itself is not complicated. We already solved it, but he used
+        a much cleaner way to express it.
+
+        The real genius is that once a letter is confirmed, we can create the
+        rest of the string on the right side using the exact same logic. In
+        other words, we don't have to figure out the different patterns.
+
+        It's going to be slower for sure, because the creation of the pattern
+        speeds up the filling of the rest of the string. But creating the rest
+        of the string automatically should be the first solution, and figuring
+        out the pattern should be a performance boost.
+
+        O(N), 482 ms, faster than 76.81%
+        """
+        lst_s = list(s)
+
+        def check(idx: int, le: str) -> bool:
+            return idx < 1 or (lst_s[idx - 1] != le and (idx < 2 or lst_s[idx - 2] != le))
+        
+        for i in range(len(s) - 1, -1, -1):
+            cur = ord(s[i]) + 1
+            while not check(i, chr(cur)):
+                cur += 1
+            if cur < k + 97:
+                lst_s[i] = chr(cur)
+                for j in range(i + 1, len(s)):
+                    for p in range(k):
+                        if check(j, chr(p + 97)):
+                            lst_s[j] = chr(p + 97)
+                            break
+                return ''.join(lst_s)
+        return ''
+
+
+class Solution3:
+    def smallestBeautifulString(self, s: str, k: int) -> str:
+        """Same as solution2 to find the correct current letter. And then we use
+        the pattern from solution1 to speed things up.
+
+        401 ms, faster than 84.78%
+        """
+        def check(idx: int, le: str) -> bool:
+            return idx < 1 or (s[idx - 1] != le and (idx < 2 or s[idx - 2] != le))
+        
+        for i in range(len(s) - 1, -1, -1):
+            cur = ord(s[i]) + 1
+            while not check(i, chr(cur)):
+                cur += 1
+            if cur < k + 97:
+                cur_le = chr(cur)
+                if i < 1:
+                    rpat = 'acb' if cur_le == 'b' else 'abc'
+                else:
+                    if cur_le == 'b':
+                        rpat = 'cab' if s[i - 1] == 'a' else 'acb'
+                    else:
+                        rpat = 'bac' if s[i - 1] == 'a' else 'abc'
+                q, r = divmod(len(s) - i - 1, 3)
+                return s[:i] + cur_le + q * rpat + rpat[:r]
+        return ''
+
+
+sol = Solution3()
 tests = [
     ('abcz', 26, 'abda'),
     ('dc', 4, ''),
