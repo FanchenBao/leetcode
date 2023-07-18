@@ -80,13 +80,47 @@ class Solution2:
         return res
 
 
+class Solution3:
+    def maxValue(self, events: List[List[int]], k: int) -> int:
+        """Inspired by the official solution WITHOUT binary search. We use DP,
+        where dp(idx, rem, pre_end) is the max value possible starting from
+        events[idx] with rem number of events to take, and the previous event
+        ending at pre_end. However, pre_end is NOT part of the state, because if
+        idx, rem have been handled already, it does not matter the exact value
+        of pre_end. The sole purpose of pre_end is to check if events[idx] can
+        be taken in the first place. Thus, this DP is still two-level, not
+        three level.
+
+        O(KN + NlogN), 978 ms, faster than 45.57%
+        """
+        memo = defaultdict(int)
+        N = len(events)
+        events.sort()
+
+        def dp(idx: int, rem: int, pre_end: int) -> int:
+            if idx == N or rem <= 0:
+                return 0
+            # This is the key to the solution! If we cannot take events[idx] due
+            # to the conflict in time, we simply skip it
+            if events[idx][0] <= pre_end:
+                return dp(idx + 1, rem, pre_end)
+            if not memo[(idx, rem)]:
+                # we have two options. Take events[idx] or not take it
+                memo[(idx, rem)] = max(
+                    dp(idx + 1, rem, pre_end),
+                    dp(idx + 1, rem - 1, events[idx][1]) + events[idx][2],
+                )
+            return memo[(idx, rem)]
+
+        return dp(0, k, 0)
 
 
-sol = Solution2()
+sol = Solution3()
 tests = [
     ([[1,2,4],[3,4,3],[2,3,1]], 2, 7),
     ([[1,2,4],[3,4,3],[2,3,10]], 2, 10),
     ([[1,1,1],[2,2,2],[3,3,3],[4,4,4]], 3, 9),
+    ([[87,95,42],[3,42,37],[20,42,100],[53,84,80],[10,88,38],[25,80,57],[18,38,33]], 3, 222),
 ]
 
 for i, (events, k, ans) in enumerate(tests):
