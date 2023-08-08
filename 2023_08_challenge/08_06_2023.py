@@ -42,6 +42,26 @@ class Solution1:
 
 
 
+class Solution2:
+    def numMusicPlaylists(self, n: int, goal: int, k: int) -> int:
+        """Top down DP. Really really NOT that hard.
+
+        O(N * Goal), 51 ms, faster than 89.39%
+        """
+        MOD = 10**9 + 7
+
+        @lru_cache(maxsize=None)
+        def dp(uniq: int, size: int) -> int:
+            if uniq > size or uniq < 0 or size < 0:
+                return 0
+            if uniq == size:
+                return math.factorial(uniq) % MOD
+            res = uniq * dp(uniq - 1, size - 1) % MOD
+            if uniq > k:
+                res = (res + (uniq - k) * dp(uniq, size - 1)) % MOD
+            return res
+
+        return dp(n, goal)
 
 
 sol = Solution2()
