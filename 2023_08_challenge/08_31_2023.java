@@ -1,4 +1,4 @@
-class Solution {
+class Solution1 {
     public int minTaps(int n, int[] ranges) {
         /*
         LeetCode 1326
@@ -52,6 +52,108 @@ class Solution {
                 } // the else branch refers to intervals[i][1] <= rm, in which case we don't do anything
                 i++;
             }
+        }
+        return res;
+    }
+}
+
+
+
+class Solution2 {
+    public int minTaps(int n, int[] ranges) {
+        /*
+        DP solution from the official solution.
+
+        First, create all the ranges, but the left should not go below 0 and the right should not go beyond n.
+
+        Then define dp[i] as the min number of taps to cover [0, i]. For each position j in a range (start, end),
+        dp[end] = min(dp[end], dp[j] + 1)
+
+        The answer is dp[n] if it has been computed. Otherwise, -1.
+        
+        O(MN) where M is the average value in ranges.
+         */
+        int[] dp = new int[n + 1];
+        for (int i = 1; i <= n; i++) {
+            // initialization. Note that dp[0] = 0, because no tap is needed to
+            // water [0, 0] (the stretch of garden has 0 length)
+            // Other positions are initialized with an impossible large value.
+            dp[i] = n + 1;
+        }
+        for (int i = 0; i <= n; i++) {
+            int left = Math.max(0, i - ranges[i]); int right = Math.min(n, i + ranges[i]);
+            for (int j = left; j <= right; j++) {
+                dp[right] = Math.min(dp[right], dp[j] + 1);
+            }
+        }
+        return dp[n] < n + 1 ? dp[n] : -1;
+    }
+}
+
+
+class Solution3 {
+    public int minTaps(int n, int[] ranges) {
+        /*
+        Use a maxReach array to record the max right reachable from each start. In other words, maxReach[i] is the max
+        right reachable starting from i.
+
+        Then the problem is converted to starting from 0 with the maxReach serving as the max jump possible from each
+        position, what is the min number of jumps to reach n.
+
+        Given a start and currReach, we go through them to find the max next reach. Then we repeat the same process
+        until the max next reach goes to n or beyond.
+
+        O(N), 4 ms, faster than 83.50% 
+         */
+        int[] maxReach = new int[n + 1];
+        for (int i = 0; i <= n; i++) {
+            int left = Math.max(0, i - ranges[i]); int right = Math.min(n, i + ranges[i]);
+            maxReach[left] = Math.max(maxReach[left], right);
+        }
+        int curLeft = 0; int curRight = maxReach[0];
+        int res = 1;
+        while (curRight < n) {
+            int nextRight = 0;
+            for (int i = curLeft; i <= curRight; i++) {
+                nextRight = Math.max(nextRight, maxReach[i]);
+            }
+            if (nextRight <= curRight) {
+                return -1;
+            }
+            res++;
+            curLeft = curRight;
+            curRight = nextRight;
+        }
+        return res;
+    }
+}
+
+class Solution4 {
+    public int minTaps(int n, int[] ranges) {
+        /*
+        Same as Solution3, but with another looping structure from the official
+        solution.
+
+        O(N)
+         */
+        int[] maxReach = new int[n + 1];
+        for (int i = 0; i <= n; i++) {
+            int left = Math.max(0, i - ranges[i]); int right = Math.min(n, i + ranges[i]);
+            maxReach[left] = Math.max(maxReach[left], right);
+        }
+        int res = 0;
+        int curRight = 0; int nextRight = 0;
+        for (int i = 0; i <= n; i++) {
+            if (i > nextRight) {
+                // the current position i cannot be covered by the next max reach. Impossible to cover the garden ending
+                // at i.
+                return -1;
+            }
+            if (i > curRight) {
+                res++;
+                curRight = nextRight;
+            }
+            nextRight = Math.max(nextRight, maxReach[i]);
         }
         return res;
     }
