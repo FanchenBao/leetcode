@@ -9,7 +9,7 @@ const getProto = (obj) => {
     return propSet;
 };
 
-var checkIfInstanceOf = function(obj, classFunction) {
+var checkIfInstanceOf1 = function(obj, classFunction) {
     /*
     This is hard for me. The idea here is that we first conduct bunch of checks.
     Then we obtain all the prototype of classFunction, including all the
@@ -47,4 +47,20 @@ var checkIfInstanceOf = function(obj, classFunction) {
     }
     delete classFunction.prototype[dummyName];
     return res;
+};
+
+
+var checkIfInstanceOf2 = function(obj, classFunction) {
+    // Solution from https://leetcode.com/problems/check-if-object-instance-of-class/discuss/3406546/Basic-JavaScript-Solution-oror-Easy-to-understand-oror-beginner-friendly/1862208
+    // Get the classFunction's prototype.
+    // Then traverse the prototype chain of the object. Whenever one level of
+    // prototype in the chain matches the classFunction's prototype, we have an
+    // instanceOf match.
+    // 91 ms, faster than 82.12% 
+    const prototype = classFunction?.prototype;
+    while (obj !== null && obj !== undefined) {
+        obj = Object.getPrototypeOf(obj);
+        if (obj === prototype) return true;
+    }
+    return false;
 };
