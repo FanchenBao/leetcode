@@ -51,3 +51,34 @@ function memoize(fn) {
  * memoizedFn(2, 3) // 5
  * console.log(callCount) // 1 
  */
+
+/**
+ * @param {Function} fn
+ */
+function memoize(fn) {
+    // Use the Trie solution
+    // Map is much more power than a regular object. Map can use
+    // anything as its key, including objects, whereas an object
+    // can only use String or Symbol as its keys.
+    // E.g. const foo = new Map();
+    // foo.set({}, 1);
+    // foo.get({})  // undefined
+    //
+    // 303 ms, faster than 75.73%
+    const root = new Map();
+
+    return function(...args) {
+        let node = root;
+        for (const a of args) {
+            if (!node.has(a)) {
+                node.set(a, new Map());
+            }
+            node = node.get(a);
+        }
+        if (!node.has(NaN)) {
+            // use NaN as the indicator of the end of a series of args
+            node.set(NaN, fn(...args));    
+        }
+        return node.get(NaN);
+    }
+}
