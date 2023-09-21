@@ -73,3 +73,34 @@ var compactObject = function(obj) {
     }
     return obj;
 };
+
+
+/**
+ * @param {Object|Array} obj
+ * @return {Object|Array}
+ */
+var compactObject = function(obj) {
+    /*
+    A better implementation of the iterative approach.
+
+    126 ms, faster than 11.39%
+    */
+    const stack = [[obj, Array.isArray(obj) ? [] : {}]]
+    let res = stack[0][1];
+    while (stack.length > 0) {
+        const [curObj, newObj] = stack.pop();
+        for (const [k, v] of Object.entries(curObj)) {
+            if (!Boolean(v)) {
+                continue;
+            }
+            if (!(v instanceof Object)) {
+                Array.isArray(newObj) ? newObj.push(v) : newObj[k] = v;
+            } else {
+                const newSubObj = Array.isArray(v) ? [] : {};
+                Array.isArray(newObj) ? newObj.push(newSubObj) : newObj[k] = newSubObj;
+                stack.push([v, newSubObj]);
+            }
+        }
+    }
+    return res;
+}
