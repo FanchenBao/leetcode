@@ -60,3 +60,41 @@ var cancellable = function(generator) {
  * setTimeout(cancel, 50);
  * promise.catch(console.log); // logs "Cancelled" at t=50ms
  */
+
+
+var cancellable = function(generator) {
+    /*
+    This is my clumsy attempt 20 days after the initial copy-and-paste solution.
+    It is definitely not as elegant, but it gets the job done (miraculously).
+
+    */
+    // Create the cancel function. When the cancel function is called,
+    // the cancelPromise gets rejected.
+    let rejectFun;
+    const cancelPromise = new Promise((_, reject) => {
+        rejectFun = reject;
+    });
+    const cancel = () => rejectFun('Cancelled');
+    
+    // Handle the generator
+    let res;
+    let val;
+    
+    const promiseFun = async () => {
+        res = generator.next()
+        while (true) {
+            try {
+                val = await Promise.race([res.value, cancelPromise]);
+                if (res.done) {
+                    break;
+                }
+                res = generator.next(val);
+            } catch (err) {
+                res = generator.throw(err);
+            }
+        }
+        return val;
+    };
+    
+    return [cancel, promiseFun()];
+};
