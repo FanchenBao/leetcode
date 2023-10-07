@@ -27,6 +27,33 @@ var curry = function(fn) {
  * csum(1)(2) // 3
  */
 
+
+var curry = function(fn) {
+    // from the official solution. Recursion implementation
+    
+    return function curried(...args) {
+        if (args.length >= fn.length) {
+            return fn(...args);
+        }
+        return (...nextArgs) => curried(...args, ...nextArgs)
+        
+    }
+};
+
+
+var curry = function(fn) {
+    // from the official solution. Use bind
+    
+    return function curried(...args) {
+        if (args.length >= fn.length) {
+            return fn(...args);
+        }
+        return curried.bind(this, ...args)
+        
+    }
+};
+
+
 // function sum(a, b) { return a + b; }
 const sum = (a, b) => a + b;
 console.log(sum.length)
