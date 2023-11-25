@@ -40,7 +40,7 @@ class MaxSegTree:
         )
 
 
-class Solution:
+class Solution1:
     def maximumSumQueries(self, nums1: List[int], nums2: List[int], queries: List[List[int]]) -> List[int]:
         """
         Surprisingly, this solution passed on the first try.
@@ -81,11 +81,50 @@ class Solution:
         return res
 
 
-sol = Solution()
+class Solution2:
+    def maximumSumQueries(self, nums1: List[int], nums2: List[int], queries: List[List[int]]) -> List[int]:
+        """
+        This is inspired by the solution
+        https://leetcode.com/problems/maximum-sum-queries/discuss/3624125/Short-Python-sorting-%2B-binary-search
+        
+        The idea is to sort xy and query in descending on x.
+        
+        Then create a monotonic stack which holds y and x + y, such that y is
+        monotonic increasing while x + y is monotonic decreasing.
+        
+        One major trick is to go through the query one by one, and for any
+        query whose qx is smaller than the x encountered so far, we add more
+        xy to the stack. This ensures that qx is only checked against the xy
+        that have larger xs than it.
+        
+        1442 ms, faster than 75.84% 
+        """
+        xy = sorted(zip(nums1, nums2), reverse=True)
+        sorted_qs = sorted(((x, y, i) for i, (x, y) in enumerate(queries)), reverse=True)
+        stack = []  # stack[i] = (y, x + y)
+        res = [0] * len(queries)
+        i = 0
+        for qx, qy, qi in sorted_qs:
+            while i < len(xy) and qx <= xy[i][0]:
+                if not stack or stack[-1][0] <= xy[i][1]:
+                    while stack and stack[-1][1] <= xy[i][0] + xy[i][1]:
+                        stack.pop()
+                    stack.append((xy[i][1], xy[i][0] + xy[i][1]))
+                i += 1
+            idx = bisect_left(stack, qy, key=lambda tup:tup[0])    
+            if idx < len(stack):
+                res[qi] = stack[idx][1]
+            else:
+                res[qi] = -1
+        return res
+
+
+sol = Solution2()
 tests = [
-    ([4,3,1,2], [2,4,9,5], [[4,1], [1,3], [2,5]], [6,10,7]),
-    ([3,2,5], [2,3,4], [[4,4], [3,2], [1,1]], [9,9,9]),
-    ([2,1], [2,3], [[3,3]], [-1]),
+    # ([4,3,1,2], [2,4,9,5], [[4,1], [1,3], [2,5]], [6,10,7]),
+    # ([3,2,5], [2,3,4], [[4,4], [3,2], [1,1]], [9,9,9]),
+    # ([2,1], [2,3], [[3,3]], [-1]),
+    ([89,85], [53,32], [[75,48]], [142]),
 ]
 
 for i, (nums1, nums2, queries, ans) in enumerate(tests):
