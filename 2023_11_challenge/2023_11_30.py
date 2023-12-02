@@ -3,7 +3,7 @@ from typing import List
 import math
 
 
-class Solution:
+class Solution1:
     def minimumOneBitOperations(self, n: int) -> int:
         """
         LeetCode 1611
@@ -91,6 +91,41 @@ class Solution:
             return 2**(len(strn) - first_bit_idx) - 1  # no second '1'
 
         return helper(bin(n)[2:])
+
+
+class Solution2:
+    def minimumOneBitOperations(self, n: int) -> int:
+        """
+        This follows the official solution, where it is shown with proof that
+        a value 2**k would take 2**(k + 1) - 1 steps to reduce to zero.
+
+        But a more important conclusion is the proof that the optimal operations
+        to turn x -> y is the same as y -> x.
+
+        Thus, given any value n, we can break it into two parts. The 2**k part
+        which contains the left most bit, and the remaining part. The remaining
+        part is n XOR 2**k
+
+        Let's call A(n) as the function that finds the minimum operations, then
+        A(n) = 2**(k + 1) - 1 - A(n XOR 2**k)
+
+        Here is the last important part where we identify that A(n) is the
+        difference, not the sum of the two operations.
+        
+        This is because the steps to go from 0 to n is the same as n to 0, both
+        are 2**(k + 1) - 1.
+
+        To go from 2**k to n XOR 2**k takes A(n XOR 2**k) (because this is the same as
+        going from n XOR 2**k to 2**k).
+
+        Thus we have 2**(k + 1) - 1 = A(n XOR 2**k) + A(n)
+        """
+        if n == 0:
+            return 0
+
+        k = len(bin(n)) - 2
+        return (1 << k) - 1 - self.minimumOneBitOperations(n ^ (1 << (k - 1)))
+        
 
 
 
