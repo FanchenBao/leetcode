@@ -85,7 +85,40 @@ class Solution2:
 
 
 
-sol = Solution2()
+class Solution3:
+    def countServers(self, n: int, logs: List[List[int]], x: int, queries: List[int]) -> List[int]:
+        """
+        Let's try using len(counter). Also, move hi first, such that we only
+        need to check whether a server is still in the counter when moving lo.
+
+        Inspired by https://leetcode.com/problems/count-zero-request-servers/discuss/3677996/C%2B%2B-or-Very-Simple-and-Intuitive-or-Sliding-Window-or-Well-Commented-or-Detailed-Explanation
+
+        O(NlogN + MlogM + N), 1568 ms, faster than 12.34%
+        """
+        logs.sort(key=lambda tup: tup[1])
+        queries_idx = sorted((q, i) for i, q in enumerate(queries))
+        res = [0] * len(queries)
+        # Use binary search to find the indices on logs.
+        # Then use sliding window to compute the counter
+        counter = Counter()
+        lo = hi = 0
+        for i in range(len(queries_idx)):
+            rl, rr = queries_idx[i][0] - x, queries_idx[i][0]
+            # Handle the hi first, and we do not need to check the counter
+            while hi < len(logs) and logs[hi][1] <= rr:
+                counter[logs[hi][0]] += 1
+                hi += 1
+            # Handle the lo
+            while lo < len(logs) and logs[lo][1] < rl:
+                counter[logs[lo][0]] -= 1
+                if (counter[logs[lo][0]] == 0):
+                    del counter[logs[lo][0]]
+                lo += 1
+            res[queries_idx[i][1]] = n - len(counter)
+        return res
+
+
+sol = Solution3()
 tests = [
     (3, [[1,3],[2,6],[1,5]], 5, [10, 11], [1, 2]),
     (4, [[2,30],[2,5],[3,9],[4,21]], 9, [11,28,16,18], [2,3,3,3]),
