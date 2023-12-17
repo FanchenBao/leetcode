@@ -69,7 +69,47 @@ class Solution:
         return res + (count + 1) * count // 2
 
 
-sol = Solution()
+class Solution2:
+    def continuousSubarrays(self, nums: List[int]) -> int:
+        """
+        Inspired by https://leetcode.com/problems/continuous-subarrays/discuss/3706927/O(N)-or-No-Multiset-Deque-set-etc.-%2B-Similar-Questions
+
+        We will use sliding window to solve this problem.
+
+        We start from the first one and use it to determine the initial range.
+        Then as we encounter more numbers, we compare to the previous range and
+        update the range.
+
+        If a new number is outside the range, we iterate backwards to find where
+        the end of the previous subarray (or the start of the current subarray)
+        shall be. We keep going like this until we cover the entire array.
+
+        In addition, we can make the computation of the count of subarray easier
+        by adding all the subarrays ending at a number when it is encountered.
+
+        705 ms, faster than 78.43%
+        """
+        st = 0
+        res = 0
+        lo, hi = nums[0] - 2, nums[0] + 2
+        for i in range(len(nums)):
+            if lo <= nums[i] <= hi:
+                lo = max(lo, nums[i] - 2)
+                hi = min(hi, nums[i] + 2)
+            else:
+                lo, hi = nums[i] - 2, nums[i] + 2
+                st = i - 1
+                while st and lo <= nums[st] <= hi:
+                    lo = max(lo, nums[st] - 2)
+                    hi = min(hi, nums[st] + 2)
+                    st -= 1
+                st += 1
+            res += i - st + 1
+        return res
+
+
+
+sol = Solution2()
 tests = [
     ([5,4,2,4], 8),
     ([1,2,3], 6),
