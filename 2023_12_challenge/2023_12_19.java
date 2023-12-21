@@ -32,3 +32,74 @@ class Solution {
     }
 }
 
+
+class Solution {
+    public int[][] imageSmoother(int[][] img) {
+        /*
+        This method uses divmod to hide two values in one number.
+        Say we want to hide p and r, then for a given X, we can hide
+        these two values in Y = p * X + r.
+
+        Here, we assign r as the original value in img, thus X must be
+        256, because we can get r by performing Y % 256.
+
+        p becomes the average.
+        */
+        int M = img.length; int N = img[0].length;
+        for (int i = 0; i < M; i++) {
+            for (int j = 0; j < N; j++) {
+               int cnt = 0; int sum = 0;
+               for (int x = i - 1; x <= i + 1; x++) {
+                   for (int y = j - 1; y <= j + 1; y++) {
+                       if (x >= 0 && x < M && y >= 0 && y < N) {
+                           sum += img[x][y] % 256;
+                           cnt++;
+                       }
+                   }
+               }
+               img[i][j] += (sum / cnt) * 256;
+            }
+        }
+        for (int i = 0; i < M; i++) {
+            for (int j = 0; j < N; j++) {
+                img[i][j] /= 256;
+            }
+        }
+        return img;
+    }
+}
+
+
+class Solution {
+    public int[][] imageSmoother(int[][] img) {
+        /*
+        This method stores the original value in the least significant
+        8 bits, and the average value in the 8 bits right above the least
+        significant 8 bits. We can do this because the values in img is
+        not bigger than 256, which means they can all be represented by
+        8 bits. Similarly, their mean can also be represented by 8 bits.
+        */
+        int M = img.length; int N = img[0].length;
+        for (int i = 0; i < M; i++) {
+            for (int j = 0; j < N; j++) {
+               int cnt = 0; int sum = 0;
+               for (int x = i - 1; x <= i + 1; x++) {
+                   for (int y = j - 1; y <= j + 1; y++) {
+                       if (x >= 0 && x < M && y >= 0 && y < N) {
+                           sum += img[x][y] & 255;
+                           cnt++;
+                       }
+                   }
+               }
+               img[i][j] |= (sum / cnt) << 8 ;
+            }
+        }
+        for (int i = 0; i < M; i++) {
+            for (int j = 0; j < N; j++) {
+                img[i][j] >>= 8;
+            }
+        }
+        return img;
+    }
+}
+

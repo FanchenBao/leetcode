@@ -46,7 +46,48 @@ class Solution:
         return res
 
 
-sol = Solution()
+class Solution2:
+    def sumImbalanceNumbers(self, nums: List[int]) -> int:
+        """
+        This method is inspired by the top two solutions in the forum. The idea is
+        that for a given nums[i], we need to find on its right side the nearest
+        element that is nums[i] + 1, then any value in between nums[i] and nums[i] + 1
+        leads to a contribution for nums[i] to the imbalance number.
+
+        Similarly, we also find on its left side the nearest element that is nums[i] + 1
+        or nums[i], then the values in between also leads nums[i] to contribute 1 to
+        the imbalance number.
+
+        Say we have m counts of values in between on the left and n counts on the right,
+        we can produce m * n number of subarrays with one contribution from nums[i].
+
+        However, at the end, we must remove all the subarrays with each nums[i] being the
+        max value, because when nums[i] is the max value in the subarray, it does NOT
+        contribute to the imbalance number.
+
+        O(N), 64 ms, faster than 95.60%
+        """
+        N = len(nums)
+        left = [-1] * (N + 2)
+        last_seen = [-1] * (N + 2)
+        for i, n in enumerate(nums):
+            left[i] = max(last_seen[n], last_seen[n + 1])
+            last_seen[n] = i
+        right = [N] * (N + 2)
+        last_seen = [N] * (N + 2)
+        for i in range(N - 1, -1, -1):
+            n = nums[i]
+            right[i] = last_seen[n + 1]
+            last_seen[n] = i
+        res = 0
+        for i, n in enumerate(nums):
+            res += (i - left[i]) * (right[i] - i)
+        # remove the extra subarrays with nums[i] being the max in the subarray
+        return res - N * (N + 1) // 2
+        
+
+
+sol = Solution2()
 tests = [
     ([2,3,1,4], 3),
 ]
