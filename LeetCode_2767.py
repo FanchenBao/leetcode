@@ -4,7 +4,7 @@ import math
 from functools import lru_cache
 
 
-class Solution:
+class Solution1:
     def minimumBeautifulSubstrings(self, s: str) -> int:
         """
         Since s has max length of 15, this means there are only seven different
@@ -44,6 +44,34 @@ class Solution:
         res = helper(s)
         return res if res < math.inf else -1
 
+
+class Solution2:
+    def minimumBeautifulSubstrings(self, s: str) -> int:
+        """
+        Inspired by lee215
+        https://leetcode.com/problems/partition-string-into-minimum-beautiful-substrings/discuss/3737219/JavaC%2B%2BPython-DP
+
+        Still DP, but dp[i] is the min number of partitions to create substrings
+        for s[:i + 1]
+
+        Also, a faster way to identify whether a binary number is power of 5 is
+        to test whether it is divisible by 5^6 = 15625
+        
+        O(N^2), 44 ms, faster than 83.95%
+        """
+        dp = [math.inf] * len(s)
+        DIV = 15625
+        for i in range(len(s)):
+            cur = 0
+            for j in range(i, -1, -1):
+                if s[j] == '0':
+                    continue
+                cur += int(s[j]) << (i - j)
+                if cur > DIV:
+                    break
+                if DIV % cur == 0:
+                    dp[i] = min(dp[i], (dp[j - 1] + 1) if j >= 1 else 1)
+        return dp[-1] if dp[-1] < math.inf else -1
 
 
 sol = Solution2()
