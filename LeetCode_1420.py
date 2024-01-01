@@ -29,6 +29,30 @@ class Solution:
         return dp(0, 0, k)
 
 
+class Solution:
+    def numOfArrays(self, n: int, m: int, k: int) -> int:
+        """
+        Another attempt to solve this problem (2023-12-30), and this time
+        we pretty smoothly succeeded in the first try.
+        
+        O(MNK), 1115 ms, faster than 78.86%
+        """
+        MOD = 1000000007
+
+        @lru_cache(maxsize=None)
+        def dp(idx: int, rem: int, pre_max: int) -> int:
+            if idx == n and rem == 0:
+                return 1
+            if rem < 0 or (idx == n and rem > 0):
+                return 0
+            res = (pre_max * dp(idx + 1, rem, pre_max)) % MOD
+            for v in range(pre_max + 1, m + 1):
+                res = (res + dp(idx + 1, rem - 1, v)) % MOD
+            return res
+
+        return dp(0, k, 0)
+
+
 
 sol = Solution()
 tests = [
