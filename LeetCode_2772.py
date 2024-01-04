@@ -5,24 +5,9 @@ import math
 
 class Solution:
     def checkArray(self, nums: List[int], k: int) -> bool:
-        i = j = 0
         N = len(nums)
-        while i < N or j < N:
-            if i == j:
-                j += 1
-            while j < N and j - i < k:
-                if nums[j] < nums[j - 1]:
-                    return False
-                j += 1
-            left = nums[i]
-            while i < j and nums[i] == left:
-                nums[i] -= left
-                i += 1
-            nums[j - 1] -= left
-            if i < j - 1:
-                nums[i] -= left 
-            print(nums, j)
-        return True
+        pre = 0
+        
                 
 
 
