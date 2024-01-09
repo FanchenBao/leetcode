@@ -119,11 +119,38 @@ class Solution2:
         return res
 
 
-sol = Solution2()
+class Solution3:
+    def maximumSumQueries(self, nums1: List[int], nums2: List[int], queries: List[List[int]]) -> List[int]:
+        """
+        Another practice on this problem. I was not able to do it again from scratch, so this problem
+        needs to remain in the list for a future review.
+        """
+        xy = sorted(zip(nums1, nums2), reverse=True);
+        qxy = sorted(((qx, qy, i) for i, (qx, qy) in enumerate(queries)), reverse=True);
+        res = [0] * len(queries)
+        stack = []  # stack[i] = (y, x + y) and y is non-decreasing whereas x + y is non-increasing
+        idx = 0
+        for qx, qy, i in qxy:
+            while idx < len(xy) and xy[idx][0] >= qx:
+                if not stack or stack[-1][0] <= xy[idx][1]:
+                    while stack and stack[-1][1] <= xy[idx][0] + xy[idx][1]:
+                        stack.pop()
+                    stack.append((xy[idx][1], xy[idx][0] + xy[idx][1]))
+                idx += 1
+            j = bisect_left(stack, qy, key=lambda tup: tup[0])
+            if j < len(stack):
+                res[i] = stack[j][1]
+            else:
+                res[i] = -1  # cannot find a y larger than qy while x is larger than qx
+        return res
+
+        
+
+sol = Solution3()
 tests = [
-    # ([4,3,1,2], [2,4,9,5], [[4,1], [1,3], [2,5]], [6,10,7]),
-    # ([3,2,5], [2,3,4], [[4,4], [3,2], [1,1]], [9,9,9]),
-    # ([2,1], [2,3], [[3,3]], [-1]),
+    ([4,3,1,2], [2,4,9,5], [[4,1], [1,3], [2,5]], [6,10,7]),
+    ([3,2,5], [2,3,4], [[4,4], [3,2], [1,1]], [9,9,9]),
+    ([2,1], [2,3], [[3,3]], [-1]),
     ([89,85], [53,32], [[75,48]], [142]),
 ]
 
