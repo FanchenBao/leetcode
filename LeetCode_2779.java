@@ -110,3 +110,33 @@ class Solution {
         return res;
     }
 }
+
+
+class Solution {
+    public int maximumBeauty(int[] nums, int k) {
+        /*
+        From lee215
+        https://leetcode.com/problems/maximum-beauty-of-an-array-after-applying-operation/discuss/3771308/JavaC%2B%2BPython-Sliding-Window
+
+        This solution is lethal, absolutely bonkers good. The crazy thing is that I had
+        the similar idea, where we find the smallest value, plus 2k on it, and see how far
+        we can reach. Except, in my case, I went for binary search to locate the value on
+        the right, but with lee215's solution, he used sliding window, which can solve it
+        much faster. And since we are lookinf for the longest subsequence, once we find
+        a sliding window that satisfies beauty array, we never shrink it, only expand it.
+        
+        O(NlogN), 37 ms, faster than 88.66% 
+         */
+        Arrays.sort(nums);
+        int i = 0;
+        int res = 0;
+        for (int j = 0; j < nums.length; j++) {
+            if (nums[j] > nums[i] + 2 * k)
+                i++;
+            res = Math.max(res, j - i + 1);
+        }
+        return res;
+    }
+}
+
+
