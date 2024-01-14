@@ -34,3 +34,42 @@ class Solution {
     }
 }
 
+
+class Solution {
+    public int minimumIndex(List<Integer> nums) {
+        /*
+        Using Boyer-Moore algo to find the majority item without
+        using a hash map.
+        
+        Since we avoid using a hash map, the speed improvement is
+        significnat: 12 ms, faster than 91.18% 
+         */
+        // Boyer-Moore to find the majority item
+        int maj = 0; int count = 0;
+        for (int n : nums) {
+            if (count == 0) {
+                maj = n;
+                count = 1;
+            } else if (maj == n) {
+                count++;
+            } else {
+                count--;
+            }
+        }
+        // Count the majority item
+        count = 0;
+        for (int n : nums)
+            count = n == maj ? count + 1 : count;
+        // find the first index
+        int lcount = 0;
+        for (int i = 0; i < nums.size(); i++) {
+            if (nums.get(i) == maj) {
+                lcount++;
+                if (lcount * 2 > i + 1 && (count - lcount) * 2 > nums.size() - i - 1)
+                    return i;
+            }
+        }
+        return -1;
+    }
+}
+

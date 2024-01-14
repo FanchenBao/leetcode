@@ -1,11 +1,12 @@
 # from pudb import set_trace; set_trace()
+from sys import maxsize
 from typing import List
 import math
 from functools import lru_cache
 from collections import Counter
 
 
-class Solution:
+class Solution1:
     def getLengthOfOptimalCompression(self, s: str, k: int) -> int:
         """
         LeetCode 1531
@@ -49,6 +50,51 @@ class Solution:
 
         return dp(0, k)
 
+
+class Solution:
+    def getLengthOfOptimalCompression(self, s: str, k: int) -> int:
+        """
+        This is another attempt at this problem WITHOUT the mind twister.
+        
+        At each position idx, we simply assume that it is the correct
+        letter. Thus we go from idx to the end and for each count of
+        letter s[idx], we try to see if that is the correct letter with
+        the correct count. This avoids the complexity of thinking about
+        grabbing the max count from idx to the end.
+        
+        Also, at each position, we have to consider removing it.
+        
+        O(N^2), 986 ms, faster than 96.46%
+        """
+        MAX = 1000
+        
+        def encoded_length(l: int) -> int:
+            if l == 1:
+                return 1
+            elif l < 10:
+                return 2
+            elif l < 100:
+                return 3
+            else:
+                return 4
+        
+        @lru_cache(maxsize=None)
+        def dp(idx: int, rem: int) -> int:
+            if rem < 0:
+                return MAX
+            if len(s) - idx <= rem:  # not enough letters to be removed
+                return 0
+            count = 0
+            res = dp(idx + 1, rem - 1)  # remove the current letter
+            # Or not remove the current. When removing the current letter
+            # we need to group together all the same letters.
+            for i in range(idx, len(s)):
+                count += s[i] == s[idx]
+                to_remove = i - idx + 1 - count
+                res = min(res, encoded_length(count) + dp(i + 1, rem - to_remove))
+            return res
+
+        return dp(0, k)
 
 
 sol = Solution2()
