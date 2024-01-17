@@ -5,7 +5,20 @@ from random import randint
 
 
 class RandomizedSet:
+    """
+    LeetCode 380
 
+    Use a list with a index pointing to the next available spot as a holder
+    of all the values. Each time a value is removed, we swap it with the end
+    of the list and we move the index backwards.
+
+    There is an edge case that I didn't consider previously, which is when
+    the removed item is at the end of the list. When that happens, we should
+    not reset the index in the map.
+
+    284 ms, faster than 82.34%
+
+    """
     def __init__(self):
         self.val_map = {}
         self.val_lst = []
@@ -26,13 +39,15 @@ class RandomizedSet:
         if val not in self.val_map:
             return False
         idx = self.val_map.pop(val)
-        self.val_lst[idx] = self.val_lst[self.hi - 1]
         self.hi -= 1
+        if self.hi != idx:
+            self.val_lst[idx] = self.val_lst[self.hi]
+            self.val_map[self.val_lst[idx]] = idx
         return True
 
     def getRandom(self) -> int:
         idx = randint(0, self.hi - 1)
-        return self.val_lst[idx]
+        return self.val_lst[idx]        
 
 
 # Your RandomizedSet object will be instantiated and called as such:
@@ -40,7 +55,6 @@ class RandomizedSet:
 # param_1 = obj.insert(val)
 # param_2 = obj.remove(val)
 # param_3 = obj.getRandom()
-
 
 sol = Solution2()
 tests = [
