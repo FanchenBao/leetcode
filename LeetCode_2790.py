@@ -54,21 +54,15 @@ class Solution1:
 class Solution2:
     def maxIncreasingGroups(self, usageLimits: List[int]) -> int:
         """
-        This uses the same idea, but we might be able to simplify the procedure
-        drastically.
+        This uses the same idea, but we can omit the repeats if they are no
+        smaller than the max number of groups allowed for the associated
+        number.
 
-        After sorting usageLimits, if the large values are bigger or equal
-        to the max repeats possible, then we don't even have to consider them
-        anymore, because they will always be able to contribute to one
-        additional group. In other words, if we have m usageLimits that are
-        bigger or equal to the max requirements, we will have at least m number
-        of additional groups for free.
+        The omission can reduce the run time, because the total length of
+        usageLimits that goes into the binary search may be smaller than the
+        original length.
 
-        We only need to consider the limits that are smaller or equal to the
-        max repeats. And we don't have to consider them one by one. Instead,
-        we can simply add them together to see if the total number of repeats
-        is larger or equal to the required repeats. If yes, we can form the
-        required number of groups, otherwise not.
+        O(NlogN), 2126 ms, faster than 6.67%
         """
         usageLimits.sort()
         N = len(usageLimits)
@@ -76,22 +70,34 @@ class Solution2:
             N -= 1
         free = len(usageLimits) - N  # we get these additional groups for free
         lo, hi = 0, N + 1
-        total_reps = sum(usageLimits[:N])
         while lo < hi:
             mid = (lo + hi) // 2
-            req = (1 + mid) * mid // 2
-            if total_reps >= req:
-                lo += 1
+            req = mid
+            deficit = 0
+            for i in range(N - 1, -1, -1):
+                d = usageLimits[i] - req
+                if d <= 0:
+                    deficit += d
+                else:
+                    # we cannot increase deficit to above 0, becau:wqse once the
+                    # deficit is cleared, any extra repeats of the current
+                    # number cannot count towards the deficit in the subsequent
+                    # iteration
+                    deficit = min(0, deficit + d)
+                req = max(0, req - 1)
+            if deficit == 0:
+                lo = mid + 1
             else:
                 hi = mid
         return lo - 1 + free
 
 
-sol = Solution()
+sol = Solution2()
 tests = [
     # ([1,2,5], 3),
     # ([2,1,2], 2),
-    ([1,7,7,1], 3),
+    # ([1,7,7,1], 3),
+    ([2,8,5,8,1,4,5,1,10,2], 8),
 ]
 
 for i, (usageLimits, ans) in enumerate(tests):
