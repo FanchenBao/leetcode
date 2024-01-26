@@ -92,6 +92,30 @@ class Solution2:
         return lo - 1 + free
 
 
+class Solution3:
+    def maxIncreasingGroups(self, usageLimits: List[int]) -> int:
+        """
+        This is the solution from lee215
+        https://leetcode.com/problems/maximum-number-of-groups-with-increasing-length/discuss/3803904/JavaC%2B%2BPython-Math-O(n)
+
+        For a breakdown of this method, refer to my own comment:
+        https://leetcode.com/problems/maximum-number-of-groups-with-increasing-length/discuss/3803904/JavaC++Python-Math-O(n)/2227246
+
+        O(NlogN) but without binary search part. 750 ms, faster than 67.21%
+        """
+        total = 0
+        res = 1
+        for u in sorted(usageLimits):
+            total += u
+            if total >= (1 + res) * res // 2:  # is res number of groups possible?
+                res += 1
+        return res - 1
+
+
+
+
+
+
 sol = Solution2()
 tests = [
     # ([1,2,5], 3),
