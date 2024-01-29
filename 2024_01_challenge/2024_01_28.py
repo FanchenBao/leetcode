@@ -3,7 +3,7 @@ from typing import List
 import math
 from collections import Counter
 
-class Solution:
+class Solution1:
     def numSubmatrixSumTarget(self, matrix: List[List[int]], target: int) -> int:
         """
         LeetCode 1074
@@ -42,7 +42,33 @@ class Solution:
                     res += pcounts[k][psums[k] - target]
                     pcounts[k][psums[k]] += 1
         return res
-            
+
+
+class Solution2:
+    def numSubmatrixSumTarget(self, matrix: List[List[int]], target: int) -> int:
+        """
+        Exactly the same idea as Solution1, but with simpler implementation.
+
+        O(M^2N), 806 ms, faster than 21.49%
+        """
+        M, N = len(matrix), len(matrix[0])
+        psum_cols = [[0] * N for _ in range(M)]
+        for j in range(N):
+            psum = 0
+            for i in range(M):
+                psum += matrix[i][j]
+                psum_cols[i][j] = psum
+        res = 0
+        for i in range(M):
+            for k in range(i, -1, -1):
+                psum = 0
+                pcount = Counter([0])
+                for j in range(N):
+                    psum += psum_cols[i][j] - (psum_cols[k - 1][j] if k > 0 else 0)
+                    res += pcount[psum - target]
+                    pcount[psum] += 1
+        return res
+   
 
 
 sol = Solution()
