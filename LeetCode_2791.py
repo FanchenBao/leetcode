@@ -6,68 +6,59 @@ from collections import defaultdict, Counter
 
 class Solution:
     def countPalindromePaths(self, parent: List[int], s: str) -> int:
+        N = len(parent)
         adj = defaultdict(list)
-        for i in range(1, len(parent)):
+        for i in range(1, N):
             adj[parent[i]].append((i, s[i]))
         
         self.res = 0
-        allowed_parities = [1 << i for i in range(26)]
-        allowed_parities.append(0)
-        
-        def dfs(node: int):
+        allowed_parities = {1 << i for i in range(26)}
+        allowed_parities.add(0)
+        # the bitmask representation of each path from root to a node
+        path_bitmask = [0] * N
+        queue = set()
+
+        def dfs(node: int, pb: int) -> None:
             """
-            We will return (
-                array of bitmasks from node to all the leaves in the subtree,
-                array of counters where each counter's key is the bitmask of all subpaths from any child to the leaves,
-            )
+            To find the path bitmask
+
+            pb is the path bitmask from root to node
             """
-            cur_dir_paths = []
-            cur_counters = []
+            path_bitmask[node] = pb
             for child, letter in adj[node]:
-                child_dir_paths, child_counters = dfs(child)
-                for i in range(len(child_dir_paths)):
-                    cp = child_dir_paths[i]
-                    cc = child_counters[i]
-                    bitmask = cp ^ (1 << (ord(letter) - 97))
-                    cur_dir_paths.append(bitmask)
-                    cc[bitmask] += 1
-                    cur_counters.append(cc)
-            # Count the number of palindrome paths starting from node and end
-            # on one of its path towards some leaf
-            for i in range(len(cur_dir_paths)):
-                cp = cur_dir_paths[i]
-                cc = cur_counters[i]
-                for pos in allowed_parities:
-                    self.res += cc[pos ^ cp]
-            # Count the number of palindrom paths connecting some path on one
-            # subtree and some path on the other subtree
+                dfs(child, pb ^ (1 << (ord(letter) - 97)))
+            if not adj[node]:
+                queue.add(node)
+
+        dfs(0, 0)
+        path_counter = Counter(path_bitmask)
+        path_counter[0] -= 1  # we do not count the path from root to root
+        res = 0
+        # BFS from leave to root and count all possible palindrome paths
+        while queue:
+            tmp = set()
+            for i in queue:
+                cur = path_bitmask[i]
+                if cur in allowed_parities:
+                    res += 1
+                path_counter[cur] -= 1  # do not double count the current path
+                for ap in allowed_parities:
+                    res += path_counter[ap ^ cur]
+                if parent[i]:
+                    tmp.add(parent[i])
+            queue = tmp
+        return res
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-                    
-
-
-
-
-sol = Solution2()
+sol = Solution()
 tests = [
-    ("hello", "holle"),
-    ("leetcode", "leotcede"),
+    # ([-1,0,0,1,1,2], 'acaabc', 8),
+    # ([-1,0], 'pi', 1),
+    ([-1,2,6,2,5,2,7,0], "pipfippl", 15),
 ]
 
-for i, (s, ans) in enumerate(tests):
-    res = sol.reverseVowels(s)
+for i, (parent, s, ans) in enumerate(tests):
+    res = sol.countPalindromePaths(parent, s)
     if res == ans:
         print(f'Test {i}: PASS')
     else:
