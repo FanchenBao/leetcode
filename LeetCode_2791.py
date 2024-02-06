@@ -6,10 +6,25 @@ from collections import defaultdict, Counter
 
 class Solution:
     def countPalindromePaths(self, parent: List[int], s: str) -> int:
+        """
+        Boy is this a good problem with fairly complicated implementation.
+
+        First, we need to have the bitmask insight, which luckily I do.
+
+        Second, we need to figure out the trick of using XOR for all the paths
+        ending at each node. This I did not come up with.
+
+        Then we need to use topologicla sort-based BFS. This I realized after
+        going through a failed case.
+
+        O(N), 2836 ms, faster than 44.44% 
+        """
         N = len(parent)
         adj = defaultdict(list)
+        num_children = [0] * N
         for i in range(1, N):
             adj[parent[i]].append((i, s[i]))
+            num_children[parent[i]] += 1
         
         self.res = 0
         allowed_parities = {1 << i for i in range(26)}
@@ -40,11 +55,13 @@ class Solution:
             for i in queue:
                 cur = path_bitmask[i]
                 if cur in allowed_parities:
+                    # consider path from root 0 to i
                     res += 1
                 path_counter[cur] -= 1  # do not double count the current path
+                num_children[parent[i]] -= 1
                 for ap in allowed_parities:
-                    res += path_counter[ap ^ cur]
-                if parent[i]:
+                    res += max(0, path_counter[ap ^ cur])
+                if parent[i] != 0 and num_children[parent[i]] == 0:
                     tmp.add(parent[i])
             queue = tmp
         return res
