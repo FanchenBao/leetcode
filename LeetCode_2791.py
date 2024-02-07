@@ -4,7 +4,7 @@ import math
 from collections import defaultdict, Counter
 
 
-class Solution:
+class Solution1:
     def countPalindromePaths(self, parent: List[int], s: str) -> int:
         """
         Boy is this a good problem with fairly complicated implementation.
@@ -67,10 +67,53 @@ class Solution:
         return res
 
 
+class Solution:
+    def countPalindromePaths(self, parent: List[int], s: str) -> int:
+        """
+        This solution is inspired by https://leetcode.com/problems/count-paths-that-can-form-a-palindrome-in-a-tree/discuss/3804246/Simple-DFS-solution-in-C%2B%2B-java-and-python
+
+        The general idea is the same as Solution1, but we only need to do one
+        round of DFS. As we perform DFS, we also keep track of the counter of
+        all the bitmasks, and count the number of palindrome paths ending at
+        each node.
+
+        The beauty of counting while DFS is that we can easily avoid duplicates
+        because the paths are created gradually, which means an earlier path
+        never has access to a later path to even offer the opportunity for
+        duplcation.
+
+        O(N) 1709 ms, faster than 87.81% 
+        """
+        adj = defaultdict(list)
+        N = len(parent)
+        for i in range(1, N):
+            adj[parent[i]].append(i)
+        path_counter = Counter()
+        path_counter[0] = 1  # this allows the detection of palindrome path from root to a node
+        allowed_parities = [(1 << i) for i in range(26)]
+        allowed_parities.append(0)
+
+        def dfs(node: int, path: int) -> int:
+            res = 0
+            if node:
+                path ^= (1 << (ord(s[node]) - 97))
+                for ap in allowed_parities:
+                    res += path_counter[path ^ ap]
+                path_counter[path] += 1
+            for child in adj[node]:
+                res += dfs(child, path)
+            return res
+
+        return dfs(0, 0)
+
+
+
+
+
 sol = Solution()
 tests = [
-    # ([-1,0,0,1,1,2], 'acaabc', 8),
-    # ([-1,0], 'pi', 1),
+    ([-1,0,0,1,1,2], 'acaabc', 8),
+    ([-1,0], 'pi', 1),
     ([-1,2,6,2,5,2,7,0], "pipfippl", 15),
 ]
 
