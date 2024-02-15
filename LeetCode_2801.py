@@ -4,7 +4,7 @@ import math
 from functools import lru_cache
 
 
-class Solution:
+class Solution1:
     def countSteppingNumbers(self, low: str, high: str) -> int:
         """
         The basic idea is to use DP to find the number of stepping numbers
@@ -125,12 +125,71 @@ class Solution:
         return res % 1000000007
 
 
+class Solution:
+    def countSteppingNumbers(self, low: str, high: str) -> int:
+        """
+        This solution is inspired by 
+        https://leetcode.com/problems/count-stepping-numbers-in-range/discuss/3836255/Python-Digit-DP-Clean-and-Concise
+
+        The idea is to set dp(n) to be the total count of stepping numbers
+        from 0 to n. Once we get this done, the answer is as simple as
+        dp(high) - dp(low - 1)
+
+        O(2 * 10 * N * 10), 367 ms.
+        """
+        
+        def count(n_str: str) -> int:
+            if n_str == '0':
+                return 0
+
+            @lru_cache(maxsize=None)
+            def dp(idx: int, pre_digit: int, is_tight: bool) -> int:
+                """
+                If is_tight is true, that means the choice of the current digit
+                cannot exceed n_str[idx]. Otherwise, we can choose any digit from
+                0 to 9.
+                """
+                if idx == len(n_str):
+                    return 1
+                # we can always choose not to start from the current index
+                res = 0
+                digit_n = int(n_str[idx])
+                if pre_digit == -1:
+                    if idx == 0:
+                        for cur_digit in range(1, digit_n):
+                            res += dp(idx + 1, cur_digit, False)
+                        res += dp(idx + 1, digit_n, True)
+                    else:
+                        for cur_digit in range(1, 10):
+                            res += dp(idx + 1, cur_digit, False)
+                else:
+                    ops = []
+                    if pre_digit < 9:
+                        ops.append(pre_digit + 1)
+                    if pre_digit > 0:
+                        ops.append(pre_digit - 1)
+                    for cur_digit in ops:
+                        if not is_tight or cur_digit <= digit_n:
+                            res += dp(idx + 1, cur_digit, is_tight and cur_digit == digit_n)
+                return res
+            
+            # find stepping numbers of the same number of digits as n_str
+            res = dp(0, -1, True)
+            # find stepping numbers of fewer number of digits as n_str
+            for i in range(1, len(n_str)):
+                res += dp(i, -1, False)
+            return res
+
+        return (count(high) - count(str(int(low) - 1))) % 1000000007
+
+
 sol = Solution()
 tests = [
-    # ("12", "123", 19),
-    # ('12', '234', 23),
-    # ("12", "890", 45),
+    ("12", "123", 19),
+    ('12', '234', 23),
+    ("12", "890", 45),
     ("26", "60", 6),
+    # ("90", "101", 2),
 ]
 
 for i, (low, high, ans) in enumerate(tests):
