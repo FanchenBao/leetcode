@@ -5,7 +5,7 @@ import heapq
 from collections import Counter
 
 
-class Solution:
+class Solution1:
     def mostBooked(self, n: int, meetings: List[List[int]]) -> int:
         """
         LeetCode 2402
@@ -50,7 +50,35 @@ class Solution:
         return res
 
 
-sol = Solution()
+class Solution:
+    def mostBooked(self, n: int, meetings: List[List[int]]) -> int:
+        """
+        This is from the official solution. The same two heap solution, but it
+        is much better implemented.
+
+        O(MlogM + MlogN) where M = len(meetings). Note the time complexity of
+        the inner while loop is amortized to log(N).
+
+        1163 ms, faster than 79.87%
+        """
+        end_times: List[Tuple[int, int]] = []  # record the (end times, room number)
+        unoccupied = list(range(n))  # record the room numbers of the unoccupied rooms
+        count = [0] * n
+        for st, ed in sorted(meetings):
+            while end_times and end_times[0][0] <= st:
+                _, pre_ri = heapq.heappop(end_times)
+                heapq.heappush(unoccupied, pre_ri)
+            if not unoccupied:
+                pre_ed, pre_ri = heapq.heappop(end_times)
+                ed = pre_ed + ed - st
+                heapq.heappush(unoccupied, pre_ri)
+            ri = heapq.heappop(unoccupied)
+            heapq.heappush(end_times, (ed, ri))
+            count[ri] += 1
+        return count.index(max(count))
+
+
+sol = Solution2()
 tests = [
     (
         4,
