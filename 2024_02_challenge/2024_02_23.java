@@ -18,7 +18,7 @@ import java.math.*;
 //    }
 //}
 
-class Solution {
+class Solution1 {
     public int findCheapestPrice(int n, int[][] flights, int src, int dst, int k) {
         int MAX = 300000000;
         Map<Integer, List<int[]>> graph = new HashMap<>(); // the inner array is [dest, price]
@@ -58,6 +58,10 @@ class Solution {
         return res == MAX ? -1 : res;
     }
 }
+
+
+
+
 
 
 class Main{
