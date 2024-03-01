@@ -60,7 +60,58 @@ class Solution1 {
 }
 
 
-
+class Solution {
+    public int findCheapestPrice(int n, int[][] flights, int src, int dst, int k) {
+        /*
+         * Dijkstra.
+         *
+         * The key for Dijkstra is to realize that we do NOT keep track of the
+         * price, because keeping to the lowest price is not the priority.
+         * The priority is to arrive at the destination with at most k steps.
+         * This means any time we go beyond k steps, we have to abandon the
+         * current path and try something else.
+         * With Dijkstra and without keeping track of the lowest price, we are
+         * able to say that each node we visit has the smallest price within
+         * the restraint of stops.
+         *
+         * However, we MUST keep track of the number of stops to reach a node.
+         * If a node has been reached before with the same or smaller number of
+         * stops as now, there is no need to visit it again, because earlier visits
+         * always indicate lower price, and if lower number of stops doesn't
+         * work, why would larger number of stops work.
+         *
+         * Thus, we simply run Dijkstra with k stops limit until the dst is
+         * reached.
+         * O(MlogN), where M is the number of edges and N is the number of nodes.
+         */
+        Map<Integer, List<int[]>> graph = new HashMap<>(); // the inner array is [dest, price]
+        for (int[] f : flights) {
+            graph.putIfAbsent(f[0], new ArrayList<>());
+            graph.get(f[0]).add(new int[]{f[1], f[2]});
+        }
+        PriorityQueue<int[]> queue = new PriorityQueue<>(10, (a, b) -> Integer.compare(a[1], b[1]));  // each element of queue is [node, price, stops]
+        int[] minStops = new int[n];
+        Arrays.fill(minStops, n + 1);
+        queue.add(new int[]{src, 0, 0});
+        while (!queue.isEmpty()) {
+            int[] ele = queue.poll();
+            int node = ele[0];
+            int price = ele[1];
+            int stops = ele[2];
+            if (node == dst)
+                return price;
+            if (stops >= k + 1 || stops >= minStops[node])
+                continue;
+            minStops[node] = stops;
+            for (int[] childEle : graph.getOrDefault(node, Collections.emptyList())) {
+                int child = childEle[0];
+                int edgeCost = childEle[1];
+                queue.add(new int[]{child, price + edgeCost, stops + 1});
+            }
+        }                                                                                          
+        return -1;
+    }
+}
 
 
 
