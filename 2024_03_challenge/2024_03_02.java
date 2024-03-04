@@ -96,9 +96,8 @@ class Solution {
 
 class Main{
     public static void main(String[] args) {
-        String s = "acbbaca";
-        String t = "aba";
+        int[] nums = new int[]{1, 2, 3};
         Solution sol = new Solution();
-        System.out.println(sol.minWindow(s, t));
+        System.out.println(sol.sortedSquares(nums));
     }
 }
