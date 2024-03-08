@@ -4,7 +4,7 @@ import math
 import heapq
 
 
-class Solution:
+class Solution1:
     def bfs(self, thresh: int, manhattan: List[List[int]]) -> bool:
         if manhattan[0][0] < thresh:
             return False
@@ -71,6 +71,57 @@ class Solution:
             else:
                 hi = mid
         return lo - 1
+
+
+class Solution2:
+    def maximumSafenessFactor(self, grid: List[List[int]]) -> int:
+        """
+        Try Dijkstra.
+
+        Dijkstra works. I did try it yesterday and before but it didn't work
+        out. Now that I think about it, the failure was due to the problem
+        of computing the manhattan matrix. Once we fixed that isssue, both
+        the binary search and Dijkstra methods work.
+
+        3353 ms, faster than 76.10%
+        """
+        N = len(grid)
+        manhattan = [[1000000000] * N for _ in range(N)]
+        # find all the thieves, and put them in the queue
+        queue = []
+        for i in range(N):
+            for j in range(N):
+                if grid[i][j]:
+                    queue.append((i, j, 0))
+                    manhattan[i][j] = 0
+        # fill out manhattan by finding the min Manhattan distance of each cell
+        while queue:
+            tmp = []
+            for i, j, d in queue:
+                for di, dj in [(0, 1), (0, -1), (-1, 0), (1, 0)]:
+                    ni, nj = i + di, j + dj
+                    if 0 <= ni < N and 0 <= nj < N and d + 1 < manhattan[ni][nj]:
+                        manhattan[ni][nj] = d + 1
+                        tmp.append((ni, nj, d + 1))
+            queue = tmp
+        # Dijstra
+        queue = [(-manhattan[0][0], 0, 0)]
+        safeness = [[0] * N for _ in range(N)]
+        safeness[0][0] = manhattan[0][0]
+        while queue:
+            while queue and queue[0][0] != safeness[queue[0][1]][queue[0][2]]:
+                heapq.heappop(queue)
+            s, i, j = heapq.heappop(queue)
+            if i == N - 1 and j == N - 1:
+                return -s
+            for di, dj in [(0, 1), (0, -1), (-1, 0), (1, 0)]:
+                ni, nj = i + di, j + dj
+                if 0 <= ni < N and 0 <= nj < N:
+                    cur = min(-s, manhattan[ni][nj])
+                    if cur > safeness[ni][nj]:
+                        safeness[ni][nj] = cur
+                        heapq.heappush(queue, (-cur, ni, nj))
+        return 0  # will not hit this line
 
 
 sol = Solution()
