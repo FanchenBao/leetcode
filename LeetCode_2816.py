@@ -1,5 +1,5 @@
 # from pudb import set_trace; set_trace()
-from typing import List
+from typing import List, Optional, Tuple
 import math
 
 
@@ -100,6 +100,51 @@ class Solution3:
             node = node.next
         self.reverse(tail)
         return node
+
+
+class Solution4:
+    def doubleIt(self, head: Optional[ListNode]) -> Optional[ListNode]:
+        """
+        Recursion
+        """
+
+        def helper(node: Optional[ListNode]) -> Tuple[Optional[ListNode], int]:
+            if not node:
+                return node, 0
+            next_node, c = helper(node.next)
+            c, v = divmod(node.val * 2 + c, 10)
+            new_head = ListNode(val=v, next=next_node)
+            return new_head, c
+
+        next_node, c = helper(head)
+        if c:
+            return ListNode(val=c, next=next_node)
+        return next_node
+
+
+class Solution:
+    def doubleIt(self, head: Optional[ListNode]) -> Optional[ListNode]:
+        """
+        One pass.
+
+        We leverage the properties that doubling a digit, even with carry, the
+        max carry it can produce is 1. And the only digit that can produce
+        a cary is from 5 to 9. 0 to 4 does not produce carry even if a carry
+        is pushed onto it.
+
+        Because of this, we can predict whether the current node will experience
+        carry by checking its next neighbor.
+        """
+        node = head
+        dummy = ListNode(val=1)
+        new_node = dummy
+        while node:
+            c = 1 if node.next and 5 <= node.next.val <= 9 else 0
+            _, v = divmod(node.val * 2 + c, 10)
+            new_node.next = ListNode(val=v)
+            node = node.next
+            new_node = new_node.next
+        return dummy if 5 <= head.val <= 9 else dummy.next
 
 
 sol = Solution2()
