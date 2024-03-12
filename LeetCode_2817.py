@@ -1,30 +1,27 @@
 # from pudb import set_trace; set_trace()
 from typing import List
 import math
-from collections import defaultdict
+from sortedcontainers import SortedList
 
 
 class Solution:
     def minAbsoluteDifference(self, nums: List[int], x: int) -> int:
         """
-        Try binary search
-        """
-        N = len(nums)
-        premax = [nums[0]]
-        premin = [nums[0]]
-        for i in range(1, N):
-            premax.append(max(premax[-1], nums[i]))
-            premin.append(min(premin[-1], nums[i]))
-        lo, hi = 0, 10**9
-        while lo < hi:
-            mid = (lo + hi) // 2
-            for i in range(N - 1, x - 1, -1):
-                if premax[i - x] >= nums[i] and premax[i - x] <= nums[i] + mid:
-                    break
-                if premin[i - x] <= nums[i] and 0 < nums[i] - mid <= premin[i - x]:
-                    break
-            else:
+        Take advantage of SortedList and the problem become very doable.
 
+        O(NlogN), 948 ms, faster than 89.47%
+        """
+        sorted_prefix = SortedList()
+        N = len(nums)
+        res = 10**9 + 7
+        for i in range(x, N):
+            sorted_prefix.add(nums[i - x])
+            idx = sorted_prefix.bisect_right(nums[i])
+            if idx > 0:
+                res = min(res, nums[i] - sorted_prefix[idx - 1])
+            if idx < len(sorted_prefix):
+                res = min(res, sorted_prefix[idx] - nums[i])
+        return res
 
 
 sol = Solution2()
@@ -36,6 +33,6 @@ tests = [
 for i, (s, ans) in enumerate(tests):
     res = sol.reverseVowels(s)
     if res == ans:
-        print(f'Test {i}: PASS')
+        print(f"Test {i}: PASS")
     else:
-        print(f'Test {i}; Fail. Ans: {ans}, Res: {res}')
+        print(f"Test {i}; Fail. Ans: {ans}, Res: {res}")
