@@ -90,6 +90,36 @@ class Solution2 {
     }
 }
 
+
+class Solution3 {
+    public int numSubarraysWithSum(int[] nums, int goal) {
+        /*
+         * THis is the sliding window solution without using a sparate list
+         * for all the ones.
+         *
+         * O(N) 3 ms, faster than 69.39%
+         */
+        int conseqZeros = 0;
+        int i = 0;
+        int windowSum = 0;
+        int res = 0;
+        for (int j = 0; j < nums.length; j++) {
+            windowSum += nums[j];
+            while (i < j && (windowSum > goal || nums[i] == 0)) {
+                if (nums[i] == 0)
+                    conseqZeros++;
+                else
+                    conseqZeros = 0;
+                windowSum -= nums[i++];
+            }
+            if (windowSum == goal) {
+                res += 1 + conseqZeros;
+            }
+        }
+        return res;
+    }
+}
+
 class Main{
     public static void main(String[] args) {
         String s = "acbbaca";
