@@ -4,7 +4,7 @@ import math
 from functools import lru_cache
 
 
-class Solution:
+class Solution1:
     def minimumOperations(self, nums: List[int]) -> int:
         """
         DP(idx, prev) represents the number of min operations to make
@@ -35,6 +35,27 @@ class Solution:
             return res
 
         return dp(0, 1)
+
+
+class Solution2:
+    def minimumOperations(self, nums: List[int]) -> int:
+        """
+        Bottom up DP
+
+        dp[i][j] = min operations to make nums[:i+1] satisfy the requirements
+
+        We can convert the 2D DP into a 1D, but we must start from
+        right to left for j.
+
+        O(N), 202 ms, faster than 43.45%
+        """
+        dp = [0] * 4
+        for n in nums:
+            for j in range(3, 0, -1):
+                dp[j] = dp[j] + int(n != j)
+                for k in range(1, j):
+                    dp[j] = min(dp[j], dp[k] + int(n != k))
+        return min(dp[1:])
 
 
 sol = Solution2()
