@@ -6,7 +6,25 @@ from functools import lru_cache
 
 class Solution:
     def numberOfBeautifulIntegers(self, low: int, high: int, k: int) -> int:
-        
+        """
+        I took two hints, one from the official website, and the other from
+        a top solution in the forum which says to use DP on the digits.
+
+        Hence, we have dp(number_of_digits, number_of_odd_remained, is_bounded, current_remainder, high_bound_str)
+        to compute the number of integers with the given number of digits,
+        number of odds allowed, etc. that MOD k returns the given remainder
+
+        Then we develop a count function to actually count the number of
+        beautiful integers from 1 to a given high bound. The count function
+        decides the first digit, and then use dp to find the total number of
+        beautiful integers starting with the given first digit.
+
+        64 ms, faster than 98.58%
+        """
+
+        def get_next_remainder(cur_digit: int, nd: int, cur_r: int) -> int:
+            return (cur_r - (cur_digit * 10 ** (nd - 1)) % k + k) % k
+
         @lru_cache(maxsize=None)
         def dp(nd: int, no: int, is_bounded: bool, r: int, high_bound_str: str) -> int:
             """
@@ -27,38 +45,53 @@ class Solution:
                 max_allowed = int(high_bound_str[-nd])
             res = 0
             for d in range(max_allowed + 1):
-                next_r = (r - (d * 10**(nd - 1)) % k + k) % k
-                res += dp(nd - 1, no - d % 2, is_bounded and d == max_allowed, next_r, high_bound_str)
+                next_r = get_next_remainder(d, nd, r)
+                res += dp(
+                    nd - 1,
+                    no - d % 2,
+                    is_bounded and d == max_allowed,
+                    next_r,
+                    high_bound_str,
+                )
             return res
 
         def count(high_bound: int) -> int:
+            """
+            Count the number of beautiful integers from 1 to high_bound
+            """
             high_bound_str = str(high_bound)
             res = 0
-            if len(high_bound_str) % 2 != 0:
-                cur_nd = len(high_bound_str) - 1
-                for d in range(10):
-                    next_r = (0 - (d * 10**(cur_nd - 1)) % k + k) % k 
-                    res += dp(cur_nd - 1, no - d % 2, False, nex_r, '')
+            nd = len(high_bound_str)
+            if nd % 2 == 0:
+                # bounded
+                fd = int(high_bound_str[0])
+                next_r = get_next_remainder(fd, nd, 0)
+                res += dp(nd - 1, nd // 2 - fd % 2, True, next_r, high_bound_str)
+                # unbounded
+                for d in range(1, fd):
+                    next_r = get_next_remainder(d, nd, 0)
+                    res += dp(nd - 1, nd // 2 - d % 2, False, next_r, "")
+                nd -= 2
             else:
-                # to be contonued
+                nd -= 1
+            for next_nd in range(nd, 0, -2):
+                # all unbounded
+                for d in range(1, 10):
+                    next_r = get_next_remainder(d, next_nd, 0)
+                    res += dp(next_nd - 1, next_nd // 2 - d % 2, False, next_r, "")
+            return res
 
-        high_count = 0
-        high_str = str(high)
-        for d in range(1, int(high_str[0]) + 1):
-            high_count += dp(len(high_str) - 1, )
+        return count(high) - count(low - 1)
 
 
-
-
-sol = Solution2()
+sol = Solution()
 tests = [
-    ("hello", "holle"),
-    ("leetcode", "leotcede"),
+    (10, 20, 3, 2),
 ]
 
-for i, (s, ans) in enumerate(tests):
-    res = sol.reverseVowels(s)
+for i, (low, hi, k, ans) in enumerate(tests):
+    res = sol.numberOfBeautifulIntegers(low, hi, k)
     if res == ans:
-        print(f'Test {i}: PASS')
+        print(f"Test {i}: PASS")
     else:
-        print(f'Test {i}; Fail. Ans: {ans}, Res: {res}')
+        print(f"Test {i}; Fail. Ans: {ans}, Res: {res}")
