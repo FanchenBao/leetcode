@@ -49,6 +49,44 @@ class Solution1 {
 }
 
 
+class Solution1 {
+    public int trap(int[] height) {
+        /*
+         * Use two pointers. Also keep track of the left max and right max.
+         * When lmax <= rmax, and if height[lo] < lmax, then it is guaranteed
+         * that the amount of space above height[lo] but below lmax can be
+         * collected as rain. We keep moving lo to the right until lmax > rmax
+         * then we work on height[hi] the same way
+         *
+         * O(N), 0 ms, faster than 100.00%
+        */
+        int res = 0;
+        int lo = 0;
+        int hi = height.length - 1;
+        int lmax = height[lo];
+        int rmax = height[hi];
+        while (lo <= hi) {
+            if (lmax <= rmax) {
+                if (height[lo] < lmax)
+                    res += lmax - height[lo];
+                else
+                    lmax = height[lo];
+                lo++;
+            } else {
+                if (height[hi] < rmax)
+                    res += rmax - height[hi];
+                else
+                    rmax = height[hi];
+                hi--;
+            }
+        }
+        return res;
+    }
+}
+
+
+
+
 class Solution2 {
     public int trap(int[] height) {
         /*
