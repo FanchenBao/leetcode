@@ -79,6 +79,49 @@ class Solution:
         return res
 
 
+class Solution2:
+    def minOperations(self, nums: List[int], target: int) -> int:
+        """
+        This is from lee215
+
+        First we sort nums and get its sum. If the sum is smaller than target
+        return -1.
+
+        Otherwise, we remove the highest value in nums. If total - max is
+        still bigger than target, we do not need the max and we can ditch it
+        and continue.
+
+        Otherwise, if total - max < target, we need to check whether max is
+        also smaller or equal than target. If max <= target, we should remove
+        it and reduce target by max. This fits in the idea that we need to
+        always remove the largest eligible value in nums.
+
+        If max is bigger than target, and since total - max < target, we need
+        to split max, and put both back in the nums array.
+
+        It is not possible for one of the splitted value to be splitted again.
+        This is because if total + a + a < target, then we must have a < target
+        which means a will not be split while the other a is in the array.
+        """
+        nums.sort()
+        total = sum(nums)
+        if total < target:
+            return -1
+        res = 0
+        while target:
+            n = nums.pop()
+            if total - n >= target:
+                total -= n
+            elif n <= target:
+                total -= n
+                target -= n
+            else:
+                nums.append(n // 2)
+                nums.append(n // 2)
+                res += 1
+        return res
+
+
 sol = Solution()
 tests = [
     # ([1, 32, 1, 2], 12, 2),
