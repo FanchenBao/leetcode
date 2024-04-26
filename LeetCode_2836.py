@@ -26,6 +26,8 @@ class Solution:
                     which_cycle[cur_cycle[i]] = which_cycle[cur]
             else:
                 cycles.append((cur_cycle, len(cur_cycle) - which_idx[cur]))
+                for ele in cur_cycle:
+                    which_cycle[ele] = len(cycles) - 1
 
         def compute_max_score(cycle_idx: int) -> int:
             arr, cycle_len = cycles[cycle_idx]
@@ -67,14 +69,13 @@ class Solution:
         return res
 
 
-sol = Solution2()
+sol = Solution()
 tests = [
-    ("hello", "holle"),
-    ("leetcode", "leotcede"),
+    ([1, 1, 1, 2, 3], 3, 10),
 ]
 
-for i, (s, ans) in enumerate(tests):
-    res = sol.reverseVowels(s)
+for i, (receiver, k, ans) in enumerate(tests):
+    res = sol.getMaxFunctionValue(receiver, k)
     if res == ans:
         print(f"Test {i}: PASS")
     else:
