@@ -117,6 +117,45 @@ class Solution3 {
 }
 
 
+class Solution4 {
+    public long wonderfulSubstrings(String word) {
+        /*
+         * This is from the official solution.
+         *
+         * The key is to create a prefix parity bitmask for all the substrings
+         * that starts at word[0] and ends at each word[1].
+         *
+         * Observe that if we XOR the bitmask of substring ending at i with the
+         * bitmask of substring ending at j (j < i), we get the bitmask of
+         * substring word[j:i]. Since we know the bitmask of wonderful substring
+         * must contain no more than one set bits, we can easily find the
+         * count of bitmasks that allows the current substring bitmask to
+         * become wonderful.
+         *
+         * The concept of prefix parity bitmask eliminates the need to
+         * continuously compute new bitmasks for ALL the substrings ending at
+         * each position in word.
+         *
+         * O(10N), 21 ms, faster than 64.76%
+         */
+        long[] bitmaskFreq = new long[1024];
+        long res = 0;
+        int bitmask = 0;
+        // this is required because during the check for good previous
+        // bitmasks, some previous bitmask can be identical to the current,
+        // which means their XOR is zero.
+        bitmaskFreq[0] = 1;
+        for (char c : word.toCharArray()) {
+            bitmask ^= 1 << (c - 'a');
+            res += bitmaskFreq[bitmask];
+            bitmaskFreq[bitmask] += 1;
+            for (int i = 0; i < 10; i++)
+                res += bitmaskFreq[bitmask ^ (1 << i)];
+        }
+        return res;
+    }
+}
+
 
 
 class Main{
