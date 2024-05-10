@@ -6,67 +6,41 @@ from collections import defaultdict, deque
 
 class Solution:
     def getMaxFunctionValue(self, receiver: List[int], k: int) -> int:
-        cycles: List[Tuple[Deque[int], int]] = []  # cycles[i] = (deque, cycle_length)
         N = len(receiver)
-        which_cycle = [-1] * N
-
-        def build_cycle(idx: int) -> None:
-            cur_cycle: Deque[int] = deque()
-            which_idx = {}
-            cur = idx
-            while receiver[cur] >= 0:
-                cur_cycle.append(cur)
-                which_idx[cur] = len(cur_cycle) - 1
-                nex = receiver[cur]
-                receiver[cur] = -1
-                cur = nex
-            if which_cycle[cur] >= 0:
-                for i in range(len(cur_cycle) - 1, -1, -1):
-                    cycles[which_cycle[cur]][0].appendleft(cur_cycle[i])
-                    which_cycle[cur_cycle[i]] = which_cycle[cur]
-            else:
-                cycles.append((cur_cycle, len(cur_cycle) - which_idx[cur]))
-                for ele in cur_cycle:
-                    which_cycle[ele] = len(cycles) - 1
-
-        def compute_max_score(cycle_idx: int) -> int:
-            arr, cycle_len = cycles[cycle_idx]
-            cycle_st = len(arr) - cycle_len
-            s = 0
-            if k + 1 <= len(arr):
-                for i in range(k + 1):
-                    s += arr[i]
-                hi = k
-            else:
-                sum_none_cycle = 0
-                for i in range(cycle_st):
-                    sum_none_cycle += arr[i]
-                sum_cycle = 0
-                for i in range(cycle_st, len(arr)):
-                    sum_cycle += arr[i]
-                q, r = divmod(k + 1 - len(arr) + cycle_len, cycle_len)
-                sum_partial = 0
-                for i in range(cycle_st, cycle_st + r):
-                    sum_partial += arr[i]
-                s = sum_none_cycle + sum_cycle * q + sum_partial
-                hi = cycle_st + r - 1
-            res = s
-            for lo in range(1, len(arr)):
-                s -= arr[lo - 1]
-                hi += 1
-                if hi == len(arr):
-                    hi = cycle_st
-                s += arr[hi]
-                res = max(res, s)
-            return res
-
-        for i in range(N):
-            if receiver[i] >= 0:
-                build_cycle(i)
+        cycles = []  # [([a0, a1, a2....], cycle_start_idx), ...]
+        which_cycles = [-1] * N
+        which_scores = [
+            [-1, -1] for _ in range(N)
+        ]  # [[k-length array score, the array index of the last element]]
         res = 0
-        for i in range(len(cycles)):
-            res = max(res, compute_max_score(i))
-        return res
+
+        def compute_cycle_score(cycle: List[int], cycle_start_idx: int) -> None: ...
+
+        def compute_prefix_score(prefix: List[int], cycle_idx: int) -> None: ...
+
+        def find_cycle(idx: int) -> None:
+            if receiver[idx] < 0:
+                return
+            cur = idx
+            arr = []
+            arr_idx = {}
+            while receiver[cur] >= 0:
+                nex = receiver[idx]
+                receiver[cur] = -1
+                arr_idx[cur] = len(arr)
+                arr.append(cur)
+                cur = nex
+            if which_cycles[cur] < 0:
+                # new cycle identified
+                for a in arr:
+                    which_cycles[a] = len(cycles)
+                cycles.append((arr, arr_idx[cur]))
+                compute_cycle_score(arr, arr_idx[cur])
+            else:
+                # a cycle prefix is identified
+                for a in arr:
+                    which_cycles[a] = which_cycles[cur]
+                compute_prefix_score(arr, which_cycles[cur])
 
 
 sol = Solution()
