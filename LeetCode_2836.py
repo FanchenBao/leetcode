@@ -6,41 +6,59 @@ from collections import defaultdict, deque
 
 class Solution:
     def getMaxFunctionValue(self, receiver: List[int], k: int) -> int:
-        N = len(receiver)
-        cycles = []  # [([a0, a1, a2....], cycle_start_idx), ...]
-        which_cycles = [-1] * N
-        which_scores = [
-            [-1, -1] for _ in range(N)
-        ]  # [[k-length array score, the array index of the last element]]
+        """
+        Not able to solve this problem on my own. The following is implementation
+        of all SIX hints.
+
+        lr is the last receiver, where lr[i][j] = the index of the last receiver
+        when we start from i and proceed for 2^j steps
+
+        s is the sum, where s[i][j] = the sum of all the indices when we start
+        from i and proceed for 2^j steps
+
+        We use the DP relationship to populate the lr and s matrices.
+
+        To find the answer, we break down k into its binary representation.
+        And starting from the least significant bit, if the j0th bit is 1, we go
+        from some starting point and proceed 2^j0 steps. The s matrix allows us
+        to find the sum of all the indices along the way, and the lr matric
+        allows us to find the last receiver of the current round. Then for the
+        next j1th bit which is 1, we start from the previous last receiver and
+        proceed for 2^j1 steps. So on and so forth. We can compute the total
+        score of going from some starting point and proceed for k steps.
+
+        We go through this process for each index in receiver, and return the
+        max score.
+
+        O(Mlog(K)), where M = len(receiver), 5826 ms, faster than 44.87%
+        """
+        bink_rev = bin(k)[2:][::-1]
+        M, N = len(receiver), len(bink_rev)
+        lr = [[0] * N for _ in range(M)]  # last receiver
+        s = [[0] * N for _ in range(M)]  # sum
+        # Populate the last receiver matrix
+        for i in range(M):
+            lr[i][0] = receiver[i]
+        for j in range(1, N):
+            for i in range(M):
+                lr[i][j] = lr[lr[i][j - 1]][j - 1]
+        # Populate the sum matrix
+        for i in range(M):
+            s[i][0] = receiver[i]
+        for j in range(1, N):
+            for i in range(M):
+                s[i][j] = s[i][j - 1] + s[lr[i][j - 1]][j - 1]
+        pos = [i for i in range(N) if bink_rev[i] == "1"]
         res = 0
-
-        def compute_cycle_score(cycle: List[int], cycle_start_idx: int) -> None: ...
-
-        def compute_prefix_score(prefix: List[int], cycle_idx: int) -> None: ...
-
-        def find_cycle(idx: int) -> None:
-            if receiver[idx] < 0:
-                return
-            cur = idx
-            arr = []
-            arr_idx = {}
-            while receiver[cur] >= 0:
-                nex = receiver[idx]
-                receiver[cur] = -1
-                arr_idx[cur] = len(arr)
-                arr.append(cur)
-                cur = nex
-            if which_cycles[cur] < 0:
-                # new cycle identified
-                for a in arr:
-                    which_cycles[a] = len(cycles)
-                cycles.append((arr, arr_idx[cur]))
-                compute_cycle_score(arr, arr_idx[cur])
-            else:
-                # a cycle prefix is identified
-                for a in arr:
-                    which_cycles[a] = which_cycles[cur]
-                compute_prefix_score(arr, which_cycles[cur])
+        for st in range(M):
+            # compute the score of starting from st and go k steps
+            # pr is the previous receiver
+            cur = pr = st
+            for p in pos:
+                cur += s[pr][p]
+                pr = lr[pr][p]
+            res = max(res, cur)
+        return res
 
 
 sol = Solution()
