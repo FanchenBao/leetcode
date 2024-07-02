@@ -65,6 +65,34 @@ class Solution2:
         return res
 
 
+class Solution3:
+    def countInterestingSubarrays(self, nums: List[int], modulo: int, k: int) -> int:
+        """
+        Same basic idea as Solution2, using prefix sum to represent the length
+        of subarray.
+
+        However, instead of doing another while loop to look for all the
+        previous prefix sum that can make a subarray ending at the current
+        prefix sum MOD modulo equal k, we try to pre-add all the counts of the
+        trageted previous prefix sum. The similarity among these previous
+        prefix sums is that they have the same reminder MOD modulo.
+
+        Finally, we increment the count of current prefix sum MOD modulo.
+
+        O(N) 742 ms, faster than 59.70%
+        """
+        counter: Counter = Counter()
+        cur_sum = res = 0
+        counter[0] = 1
+        for n in nums:
+            if n % modulo == k:
+                cur_sum += 1
+            if cur_sum >= k:
+                res += counter[(cur_sum - k) % modulo]
+            counter[cur_sum % modulo] += 1
+        return res
+
+
 sol = Solution2()
 tests = [
     ("hello", "holle"),
