@@ -16,10 +16,11 @@ class Solution:
     def kth_ancestor(self, node: int, k: int, anc: Dict[int, List[int]]) -> int:
         idx = 0
         res = node
-        while k:
-            if k & 1 == 1:
+        kk = k
+        while kk:
+            if kk & 1 == 1:
                 res = anc[res][idx]
-            k >>= 1
+            kk >>= 1
             idx += 1
         return res
 
@@ -47,6 +48,12 @@ class Solution:
     ) -> "TreeNode":
         """
         Practice binary lifting to solve this problem
+
+        Not good runtime because we are essentially using a cannon to hit
+        mosquitos. Nevertheless, it is a good practice of using binary lifting
+        to find lowest common ancestor.
+
+        O(NlogN), 91 ms, faster than 6.17%
         """
         anc: Dict[int, List[int]] = defaultdict(list)
         depths: Dict[int, int] = {}
@@ -58,11 +65,15 @@ class Solution:
         qv = self.kth_ancestor(qv, depths[qv] - depths[pv], anc)
         if pv == qv:
             return TreeNode(pv)
-        for lvl in range(depths[pv], -1, -1):
+        lvl = depths[pv]
+        while lvl > 0:
             ap = self.kth_ancestor(pv, lvl, anc)
             aq = self.kth_ancestor(qv, lvl, anc)
             if ap != aq:
                 pv, qv = ap, aq
+                lvl = max(depths[pv], depths[qv]) - 1
+            else:
+                lvl -= 1
         return TreeNode(anc[pv][0])
 
 
