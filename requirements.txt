@@ -1,9 +1,9 @@
 appdirs==1.4.4
-jedi==0.18.2
-numpy==1.23.5
-parso==0.8.3
-prompt-toolkit==3.0.33
-ptpython==3.0.21
-Pygments==2.13.0
+jedi==0.19.1
+numpy==2.0.1
+parso==0.8.4
+prompt_toolkit==3.0.47
+ptpython==3.0.29
+Pygments==2.18.0
 sortedcontainers==2.4.0
-wcwidth==0.2.5
+wcwidth==0.2.13
