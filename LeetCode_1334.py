@@ -7,7 +7,7 @@ import heapq
 GraphT = Dict[int, List[Tuple[int, int]]]
 
 
-class Solution:
+class Solution1:
     def dijkstra(self, root: int, graph: GraphT, thresh: int, n: int) -> int:
         """
         Return the number of cities reachable from root with weights not bigger
@@ -48,6 +48,42 @@ class Solution:
         res = -1
         for i in range(n):
             cnt = self.dijkstra(i, graph, distanceThreshold, n)
+            if cnt <= minCnt:
+                minCnt = cnt
+                res = i
+        return res
+
+
+class Solution2:
+    def findTheCity(
+        self, n: int, edges: List[List[int]], distanceThreshold: int
+    ) -> int:
+        """
+        We will use Floyd-Warshall method to find the min distance between any
+        pairs of nodes.
+
+        O(N^3), 482 ms, faster than 17.94%
+        """
+        dists = [[math.inf] * n for _ in range(n)]
+        for u, v, w in edges:
+            dists[u][v] = min(dists[u][v], w)
+            dists[v][u] = min(dists[v][u], w)
+        # Floyd-Warshall
+        for k in range(n):
+            for u in range(n):
+                for v in range(n):
+                    if u == v:
+                        dists[u][v] = 0
+                    else:
+                        dists[u][v] = min(dists[u][v], dists[u][k] + dists[k][v])
+
+        minCnt = math.inf
+        res = -1
+        for i in range(n):
+            cnt = 0
+            for j in range(n):
+                if i != j and dists[i][j] <= distanceThreshold:
+                    cnt += 1
             if cnt <= minCnt:
                 minCnt = cnt
                 res = i
