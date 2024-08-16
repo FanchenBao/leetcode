@@ -19,7 +19,7 @@ import java.math.*;
 //}
 
 
-class Solution {
+class Solution1 {
     private int getCount(int[] nums, int idx, int tgt) {
         // count the number of values in nums that are no more than tgt larger
         // then nums[idx]
@@ -63,6 +63,50 @@ class Solution {
                 lo = mid;
                 break;
             }
+        }
+        return lo;
+    }
+}
+
+
+class Solution2 {
+    private int getCount(int[] nums, int dist) {
+        // count the number of pairs in nums whose diff is no bigger than dist
+        // Here we use the sliding window technique. For a window nums[lo] to 
+        // nums[hi] where nums[hi] - nums[lo] is the largest possible that is
+        // not bigger than dist. Then the total number of pairs that end with
+        // nums[hi] is hi - lo
+        //
+        // This is brilliant use of sliding window
+        //
+        int lo = 0;
+        int res = 0;
+        for (int hi = 0; hi < nums.length; hi++) {
+            while (lo <= hi && nums[hi] - nums[lo] > dist)
+                lo++;
+            res += hi - lo;
+        }
+        return res;
+    }
+
+    public int smallestDistancePair(int[] nums, int k) {
+        /*
+         * Use the binary search + sliding window technique as demonstrated
+         * in the official solution
+         *
+         * O(NlogN + MlogN), 8 ms, faster than 80.23%
+         */
+        Arrays.sort(nums);
+        int N = nums.length;
+        int lo = 0;
+        int hi = nums[N - 1] - nums[0] + 1;
+        while (lo < hi) {
+            int mid = (lo + hi) / 2;
+            int cnt = getCount(nums, mid);
+            if (cnt < k)
+                lo = mid + 1;
+            else
+                hi = mid;
         }
         return lo;
     }
