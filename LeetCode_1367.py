@@ -18,7 +18,7 @@ class TreeNode:
         self.right = right
 
 
-class Solution:
+class Solution1:
     def get_lps(self, arr: List[int]) -> List[int]:
         """
         Produce the longest prefix suffix array for the given arr.
@@ -94,6 +94,66 @@ class Solution:
         if not root:
             return False
         return self.dfs(root, [], linkedlist)
+
+
+class Solution2:
+    def get_lps(self, arr: List[int]) -> List[int]:
+        """
+        Produce the longest prefix suffix array for the given arr.
+        lps[i] = max length of the prefix that matches the suffix ending at
+        arr[i]
+        """
+        N = len(arr)
+        lps = [0] * N
+        cur_len = 0  # current max length of matching prefix
+        i = 1
+        while i < N:
+            if arr[i] == arr[cur_len]:
+                cur_len += 1
+                lps[i] = cur_len
+                i += 1
+            elif cur_len > 0:
+                cur_len = lps[cur_len - 1]
+            else:  # cur_len is zero, impossible to match anything
+                i += 1
+        return lps
+
+    def dfs(
+        self, node: Optional[TreeNode], linkedlist: List[int], idx: int, lps: List[int]
+    ) -> bool:
+        if idx == len(linkedlist):
+            return True
+        if not node:
+            return False
+        if node.val == linkedlist[idx]:
+            return self.dfs(node.left, linkedlist, idx + 1, lps) or self.dfs(
+                node.right, linkedlist, idx + 1, lps
+            )
+        if idx > 0:
+            return self.dfs(node, linkedlist, lps[idx - 1], lps)
+        return self.dfs(node.left, linkedlist, idx, lps) or self.dfs(
+            node.right, linkedlist, idx, lps
+        )
+
+    def isSubPath(self, head: Optional[ListNode], root: Optional[TreeNode]) -> bool:
+        """
+        Second version of KMP where we perform the match as we go through the
+        DFS. In fact, this makes a lot of sense, because the matching algorithm
+        always goes through the source array one by one, the same as DFS. The
+        benefit of this is that we don't have to go through the path a second
+        time for the matching.
+
+        60 ms, faster than 85.29%
+        """
+        if not root:
+            return False
+        linkedlist = []
+        listnode = head
+        while listnode:
+            linkedlist.append(listnode.val)
+            listnode = listnode.next
+        lps = self.get_lps(linkedlist)
+        return self.dfs(root, linkedlist, 0, lps)
 
 
 sol = Solution2()
