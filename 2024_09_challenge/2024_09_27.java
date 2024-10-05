@@ -43,9 +43,14 @@ class MyCalendarTwo {
            else if (k >= end)
                break;
        }
+       if (start < this.linesweep.firstKey() || start > this.linesweep.lastKey()) {
+            this.linesweep.put(start, 1);
+       } else if (!this.linesweep.containsKey(start)) {
+            int before = this.linesweep.floorKey(start);
+            this.linesweep.put(start)
+       }
        // if (!this.linesweep.containsKey(start))
        //     this.linesweep.put(start, 1);
-       //  int beforeEnd = this.linesweep.floorKey(end);
        // if (!this.linesweep.containsKey(end))
        //     this.linesweep.put(end, this.linesweep.get(beforeEnd) - 1);
        //  else if (this.linesweep.get(beforeEnd) == this.linesweep.get(end))
