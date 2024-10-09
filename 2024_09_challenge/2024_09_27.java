@@ -47,14 +47,12 @@ class MyCalendarTwo {
             this.linesweep.put(start, 1);
        } else if (!this.linesweep.containsKey(start)) {
             int before = this.linesweep.floorKey(start);
-            this.linesweep.put(start)
+            this.linesweep.put(start, this.linesweep.get(before) + 1);
        }
-       // if (!this.linesweep.containsKey(start))
-       //     this.linesweep.put(start, 1);
-       // if (!this.linesweep.containsKey(end))
-       //     this.linesweep.put(end, this.linesweep.get(beforeEnd) - 1);
-       //  else if (this.linesweep.get(beforeEnd) == this.linesweep.get(end))
-       //      this.linesweep.remove(end);
+       if (!this.linesweep.containsKey(end)) {
+           int before = this.linesweep.floorKey(end);
+           this.linesweep.put(end, this.linesweep.get(before) - 1);
+       }
        return true;
     }
 }
