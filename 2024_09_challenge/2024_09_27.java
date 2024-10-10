@@ -18,51 +18,90 @@ import java.math.*;
 //    }
 //}
 
+class MyCalendarTwo1 {
+    List<int[]> booked = new ArrayList<>(); // interval with single or double booking
+    List<int[]> doubleBooked = new ArrayList<>(); // range with double booking
+
+    public MyCalendarTwo1() {
+       /*
+        * This solution is from the official solution of using two lists to
+        * keep track of all the intervals that are booked and doubly booked.
+        *
+        * When a new range comes, we first check the double booked list. If
+        * any interval has overlap with the new range, it is a triple booking
+        * and we return false.
+        *
+        * Otherwise, we go through the booked list and make any overlap
+        * into the double booking list.
+        *
+        * There is no need to make any modifications to the intervals already
+        * in the list, because any duplicate overlap in the booked
+        * list would have been identified in the double booking list already.
+        */
+    }
+
+    private boolean hasOverlap(int[] r1, int[] r2) {
+        return r1[1] > r2[0] && r1[0] < r2[1];
+    }
+
+    private int[] getOverlap(int[] r1, int[] r2) {
+        return new int[]{Math.max(r1[0], r2[0]), Math.min(r1[1], r2[1])};
+    }
+    
+    public boolean book(int start, int end) {
+        int[] cur = new int[]{start, end};
+        // check triple booking
+        for (int[] db : this.doubleBooked) {
+            if (hasOverlap(db, cur))
+                return false;
+        }
+        // update the bookings list
+        for (int[] sb : this.booked) {
+            if (hasOverlap(sb, cur))
+                this.doubleBooked.add(getOverlap(sb, cur));
+        }
+        booked.add(cur);
+        return true;
+    }
+}
+
 class MyCalendarTwo {
     TreeMap<Integer, Integer> linesweep = new TreeMap<>();
 
     public MyCalendarTwo() {
-        
+        /*
+         * This is the line sweep method. I was thinking about line sweep but
+         * ended up not implementing it because it was too complicated to
+         * maintain the TreeMap clean. I was essentially maintaining the
+         * prefix sum as new intervals are coming in. The official solution,
+         * however, does not maintain the prefix sum in the TreeMap. Instead,
+         * it just records the line sweep signal and computes the the prefix
+         * sum each time the book function is called.
+         */
     }
     
     public boolean book(int start, int end) {
-       // first dry run
-        System.out.println(String.format("start=%d, end=%d", start, end));
+        this.linesweep.put(start, this.linesweep.getOrDefault(start, 0) + 1);
+        this.linesweep.put(end, this.linesweep.getOrDefault(end, 0) - 1);
+        // compute prefix sum
+        int psum = 0;
         for (int k : this.linesweep.keySet()) {
-            System.out.println(String.format("k=%d, line=%d", k, this.linesweep.get(k)));
+            psum += this.linesweep.get(k);
+            if (psum == 3) {
+                // backtrack
+                this.linesweep.put(start, this.linesweep.get(start) - 1);
+                this.linesweep.put(end, this.linesweep.get(end) + 1);
+                if (this.linesweep.get(start) == 0)
+                    this.linesweep.remove(start);
+                return false;
+            }
         }
-        
-       for (int k : this.linesweep.keySet()) {
-           if (k >= start && k < end && this.linesweep.get(k) == 2)
-               return false;
-       }
-       // update
-       for (int k : this.linesweep.keySet()) {
-           if (k >= start && k < end)
-               this.linesweep.put(k, this.linesweep.get(k) + 1);
-           else if (k >= end)
-               break;
-       }
-       if (start < this.linesweep.firstKey() || start > this.linesweep.lastKey()) {
-            this.linesweep.put(start, 1);
-       } else if (!this.linesweep.containsKey(start)) {
-            int before = this.linesweep.floorKey(start);
-            this.linesweep.put(start, this.linesweep.get(before) + 1);
-       }
-       if (!this.linesweep.containsKey(end)) {
-           int before = this.linesweep.floorKey(end);
-           this.linesweep.put(end, this.linesweep.get(before) - 1);
-       }
-       return true;
+        return true;
     }
 }
 
 
-/**
- * Your MyCalendarTwo object will be instantiated and called as such:
- * MyCalendarTwo obj = new MyCalendarTwo();
- * boolean param_1 = obj.book(start,end);
- */
+
 /**
  * Your MyCalendarTwo object will be instantiated and called as such:
  * MyCalendarTwo obj = new MyCalendarTwo();
