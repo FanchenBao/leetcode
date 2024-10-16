@@ -65,10 +65,10 @@ class MyCalendarTwo1 {
     }
 }
 
-class MyCalendarTwo {
+class MyCalendarTwo2 {
     TreeMap<Integer, Integer> linesweep = new TreeMap<>();
 
-    public MyCalendarTwo() {
+    public MyCalendarTwo2() {
         /*
          * This is the line sweep method. I was thinking about line sweep but
          * ended up not implementing it because it was too complicated to
@@ -99,8 +99,6 @@ class MyCalendarTwo {
         return true;
     }
 }
-
-
 
 /**
  * Your MyCalendarTwo object will be instantiated and called as such:
