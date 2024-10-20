@@ -66,6 +66,42 @@ class Solution {
 }
 
 
+class Solution2 {
+    public int maximumSwap(int num) {
+        /*
+         * This is from the official solution with optimized greedy. We go
+         * from right to left to keep track of the index of the max value.
+         * Each time, when a number is smaller than the max, we keep track of
+         * its index as well. Eventually, we will have the index of the max
+         * value on the right, and the smallest index of the number that is
+         * smaller than the max value on the left. These two digits need to
+         * swap.
+         *
+         * This is essentially a faster implementation of the monotonic
+         * decreasing array idea.
+         */
+        char[] numArr = String.valueOf(num).toCharArray();
+        char rightMax = '0';
+        int ri = -1;
+        int li = -1;
+        for (int i = numArr.length - 1; i >= 0; i--) {
+            if (numArr[i] > rightMax) {
+                ri = i;
+                rightMax = numArr[i];
+            } else if (numArr[i] < rightMax) {
+                li = i;
+            }
+        }
+        if (ri < 0)
+            return num;
+        char tmp = numArr[li];
+        numArr[li] = numArr[ri];
+        numArr[li] = tmp;
+        return Integer.parseInt(String.valueOf(numArr));
+    }
+}
+
+
 class Main{
     public static void main(String[] args) {
         String s = "acbbaca";
