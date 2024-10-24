@@ -18,7 +18,7 @@ import java.math.*;
 //    }
 //}
 
-class Solution {
+class Solution1 {
     private void swap(char[] arr, int i, int j) {
         char tmp = arr[i];
         arr[i] = arr[j];
@@ -66,7 +66,7 @@ class Solution {
 }
 
 
-class Solution2 {
+class Solution {
     public int maximumSwap(int num) {
         /*
          * This is from the official solution with optimized greedy. We go
@@ -77,26 +77,36 @@ class Solution2 {
          * smaller than the max value on the left. These two digits need to
          * swap.
          *
+         * One trick is to use a temporary index to record the current max
+         * value. We cannot always use the max value for swap, because if there
+         * is no more smaller value on the left, the current max cannot be
+         * used for swap. Therefore, we only solidify the index of max when
+         * a smaller value can be found on the left.
+         *
          * This is essentially a faster implementation of the monotonic
          * decreasing array idea.
+         *
+         * O(N), 0 ms, faster than 100.00%
          */
         char[] numArr = String.valueOf(num).toCharArray();
         char rightMax = '0';
-        int ri = -1;
+        int tmpRi = -1; // temporary index of the current max
+        int ri = -1; // solidified index of the max for swapping
         int li = -1;
         for (int i = numArr.length - 1; i >= 0; i--) {
             if (numArr[i] > rightMax) {
-                ri = i;
+                tmpRi = i;
                 rightMax = numArr[i];
             } else if (numArr[i] < rightMax) {
                 li = i;
+                ri = tmpRi;
             }
         }
-        if (ri < 0)
+        if (li < 0)
             return num;
         char tmp = numArr[li];
         numArr[li] = numArr[ri];
-        numArr[li] = tmp;
+        numArr[ri] = tmp;
         return Integer.parseInt(String.valueOf(numArr));
     }
 }
