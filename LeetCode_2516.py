@@ -21,8 +21,8 @@ class Solution1:
         O(NlogN), 2292 ms, faster than 11.38%
         """
         N = len(s)
-        lpsum = {'a': [0], 'b': [0], 'c': [0]}
-        rpsum = {'a': [0], 'b': [0], 'c': [0]}
+        lpsum = {"a": [0], "b": [0], "c": [0]}
+        rpsum = {"a": [0], "b": [0], "c": [0]}
         for i in range(N):
             for le in lpsum.keys():
                 lpsum[le].append(lpsum[le][-1] + int(le == s[i]))
@@ -30,7 +30,7 @@ class Solution1:
             for le in lpsum.keys():
                 rpsum[le].append(rpsum[le][-1] + int(le == s[j]))
         res = math.inf
-        for lt in range(len(lpsum['a'])):
+        for lt in range(len(lpsum["a"])):
             if lt >= res:
                 break
             t = 0
@@ -43,7 +43,6 @@ class Solution1:
             else:
                 res = min(res, t)
         return res if res < math.inf else -1
-
 
 
 class Solution2:
@@ -60,7 +59,7 @@ class Solution2:
         UPDATE: during sliding window, we only need to check the current letter
         437 ms, faster than 60.28%
         """
-        letters = 'abc'
+        letters = "abc"
         limit = Counter(s)
         # find limit
         for le in letters:
@@ -79,6 +78,40 @@ class Solution2:
         return len(s) - max_l
 
 
+class Solution3:
+    def takeCharacters(self, s: str, k: int) -> int:
+        """
+        This is the attempt oon 2024-11-22. I will do my best not to peek at
+        the other two solutions above.
+
+        This solution will use a wrap-around technique to implement sliding
+        window to find the smallest sliding window that spans the start and
+        end of the string such that the letters in the span fulfill the
+        requirement.
+
+        O(N), 238 ms, faster than 51.50%
+        """
+        N = len(s)
+        if 3 * k > N:
+            return -1
+        counter = Counter(s)
+        if not all(counter[le] >= k for le in ["a", "b", "c"]):
+            return -1
+        i, j = 0, N - 1
+        res = N
+        while i <= j and counter[s[i]] - 1 >= k:
+            counter[s[i]] -= 1
+            i += 1
+        res = j - i + 1
+        while i < N:
+            j = (j + 1) % N
+            counter[s[j]] += 1
+            while i < N and (counter[s[i]] - 1 >= k or i <= j):
+                counter[s[i]] -= 1
+                i = i + 1
+            res = min(res, N - i + j + 1)
+        return min(res, j - (i % N) + 1)
+
 
 sol = Solution2()
 tests = [
@@ -93,6 +126,6 @@ tests = [
 for i, (s, k, ans) in enumerate(tests):
     res = sol.takeCharacters(s, k)
     if res == ans:
-        print(f'Test {i}: PASS')
+        print(f"Test {i}: PASS")
     else:
-        print(f'Test {i}; Fail. Ans: {ans}, Res: {res}')
+        print(f"Test {i}; Fail. Ans: {ans}, Res: {res}")
