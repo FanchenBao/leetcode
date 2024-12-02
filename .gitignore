@@ -167,3 +167,7 @@ dmypy.json
 .pytype/
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,python
+
+# Do not track C++ build files
+**/*.dSYM
+**/main
