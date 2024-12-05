@@ -2,6 +2,8 @@
 #include <set>
 #include <vector>
 
+using namespace std;
+
 class Solution {
 public:
   bool checkIfExist(std::vector<int> &arr) {
