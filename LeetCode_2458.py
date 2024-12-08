@@ -1,6 +1,7 @@
 # from pudb import set_trace; set_trace()
 from typing import List, Dict, Optional
 import math
+from collections import defaultdict
 
 
 # Definition for a binary tree node.
@@ -12,54 +13,46 @@ class TreeNode:
 
 
 class Solution:
-    def get_heights(self, node: Optional[TreeNode]) -> int:
-        if not node:
-            return -1
-        h = 1 + max(self.get_heights(node.left), self.get_heights(node.right))
-        self.heights[node.val] = h
-        return h
+    def __init__(self) -> None:
+        self.cur_max_height: int = 0
+        self.max_height_after_removal: Dict[int, int] = defaultdict(int)
 
-    def after_removal(
-        self, node: Optional[TreeNode], impact: bool, lvl: int
-    ) -> None:
-        """
-        Find the height of the binary tree after the current node is removed.
-
-        impact indicates whether the current node is on the path that determines
-        the max height. If not, removing the current node will not result in
-        any change to the max height
-        """
+    def bfs(self, node: Optional[TreeNode], lvl: int, is_ltr: bool) -> None:
         if not node:
             return
-        if not impact:
-            self.heights_after_removal[node.val] = self.total_height
-            self.after_removal(node.left, impact, lvl + 1)
-            self.after_removal(node.right, impact, lvl + 1)
-            return
-        self.heights_after_removal[node.val] = max(self.total_height)
-        lh = self.heights[node.left.val] if node.left else -1
-        rh = self.heights[node.right.val] if node.right else -1
+        self.max_height_after_removal[node.val] = max(
+            self.max_height_after_removal[node.val], self.cur_max_height
+        )
+        self.cur_max_height = max(self.cur_max_height, lvl)
+        if is_ltr:
+            self.bfs(node.left, lvl + 1, True)
+            self.bfs(node.right, lvl + 1, True)
+        else:
+            self.bfs(node.right, lvl + 1, False)
+            self.bfs(node.left, lvl + 1, False)
 
-        if lh == rh:
-            self.heights_after_removal[node.val]
-        
-
-
-     def treeQueries(self, root: Optional[TreeNode], queries: List[int]) -> List[int]:
+    def treeQueries(self, root: Optional[TreeNode], queries: List[int]) -> List[int]:
         """
-        This solution originates from the hint. We go through the tree once to
-        obtain the heights at all the nodes.
+        This solution comes from the official solution. We find the height of
+        the tree after removing each node. We store the results and can easily
+        query it.
 
-        We then go through it one more time to find out the max height of the
-        tree after each node is removed.
+        To find the height after a node is removed, we need to do two rounds of
+        traversals. First, we do left to right and keep track of the height.
+        This tells us the max height before a node is visited. This height
+        represents the left trees.
+        Then, we do right to left and obtain the max height before the same
+        node is visited. This height represents the right trees.
 
-        Then we can easily obtain the answer when querying.
+        Thus, the max height when the node is removed is the bigger of the
+        left tree height and right tree height.
+
+        O(N), 380 ms, faster than 21.36%
         """
-        self.heights: Dict[int, int] = {}
-        self.heights_after_removal: Dict[int, int] = {}
-        self.total_height = self.get_heights(root)
-        self.after_removal(root, True, -1)
-        return [self.heights_after_removal[q] for q in queries]
+        self.bfs(root, 0, True)
+        self.cur_max_height = 0  # reset before second round of bfs
+        self.bfs(root, 0, False)
+        return [self.max_height_after_removal[q] for q in queries]
 
 
 sol = Solution2()
