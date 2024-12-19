@@ -1,5 +1,6 @@
 # from pudb import set_trace; set_trace()
-from typing import List
+from collections import deque
+from typing import Deque, List
 import math
 import heapq
 
@@ -47,7 +48,7 @@ class Solution:
                         cr = i - inc_stack[j][1]
                         res += (cr + cl) * (cl - cr + 1) // 2
                         lo = inc_stack[j][1] + 1
-                        inc_stack = inc_stack[j + 1:]
+                        inc_stack = inc_stack[j + 1 :]
                         break
             elif nums[i] < dec_stack[-1][0]:
                 for j in range(len(dec_stack) - 1, -1, -1):
@@ -56,7 +57,7 @@ class Solution:
                         cr = i - dec_stack[j][1]
                         res += (cr + cl) * (cl - cr + 1) // 2
                         lo = dec_stack[j][1] + 1
-                        dec_stack = dec_stack[j + 1:]
+                        dec_stack = dec_stack[j + 1 :]
                         break
             # update the stacks
             while inc_stack and inc_stack[-1][0] >= nums[i]:
@@ -108,16 +109,48 @@ class Solution2:
         return res
 
 
+class Solution3:
+    def continuousSubarrays(self, nums: List[int]) -> int:
+        """
+        This is the monotonic deque solution from the official. It uses a
+        monotonic increasing deque to keep ttrack of the min and deceasing
+        stack to keep track of the max.
+
+        Each time a new number is encountered, we update the stacks. If the
+        max - min is within range, we include the new number without shrinking.
+        Otherwise, we shrink the stack and update the starting index.
+
+        O(N), 606 ms, faster than 90.37%
+        """
+        mon_inc: Deque[int] = deque()
+        mon_dec: Deque[int] = deque()
+        res = 0
+        left = 0
+        for i, n in enumerate(nums):
+            while mon_inc and nums[mon_inc[-1]] > n:
+                mon_inc.pop()
+            mon_inc.append(i)
+            while mon_dec and nums[mon_dec[-1]] < n:
+                mon_dec.pop()
+            mon_dec.append(i)
+            while nums[mon_dec[0]] - nums[mon_inc[0]] > 2:
+                if mon_dec[0] < mon_inc[0]:
+                    left = mon_dec.popleft() + 1
+                else:
+                    left = mon_inc.popleft() + 1
+            res += i - left + 1
+        return res
+
 
 sol = Solution2()
 tests = [
-    ([5,4,2,4], 8),
-    ([1,2,3], 6),
+    ([5, 4, 2, 4], 8),
+    ([1, 2, 3], 6),
 ]
 
 for i, (nums, ans) in enumerate(tests):
     res = sol.continuousSubarrays(nums)
     if res == ans:
-        print(f'Test {i}: PASS')
+        print(f"Test {i}: PASS")
     else:
-        print(f'Test {i}; Fail. Ans: {ans}, Res: {res}')
+        print(f"Test {i}; Fail. Ans: {ans}, Res: {res}")
