@@ -80,6 +80,38 @@ public:
   }
 };
 
+class Solution3 {
+public:
+  int findTargetSumWays(vector<int> &nums, int target) {
+    /*
+     * DP solution. dp[i][j] = number of ways to find sum j - 1000 using only
+     * nums[:i + 1]
+     *
+     * O(MN), where M = len(nums), N = 2000
+     */
+    int M = nums.size();
+    int N = 2000;
+    int dp[M][N + 1];
+    for (int j = 0; j <= N; j++) {
+      if (j - 1000 == nums[0] || j - 1000 == -nums[0])
+        dp[0][j] = 1;
+    }
+    for (int i = 1; i < M; i++) {
+      for (int j = 0; j <= N; j++) {
+        // j - nums[i] derives from (j - 1000) - nums[i] + 1000
+        // it first converts j to target value, computes a new value, and
+        // finally converts the value back to index.
+        int op1 =
+            j - nums[i] >= 0 && j - nums[i] <= N ? dp[i - 1][j - nums[i]] : 0;
+        int op2 =
+            j + nums[i] >= 0 && j + nums[i] <= N ? dp[i - 1][j + nums[i]] : 0;
+        dp[i][j] = op1 + op2;
+      }
+    }
+    return dp[M - 1][target + 1000];
+  }
+};
+
 int main() {
   std::vector<int> arr{10, 2, 5, 3};
   Solution sol;
