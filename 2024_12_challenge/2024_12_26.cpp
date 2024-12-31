@@ -84,36 +84,43 @@ class Solution3 {
 public:
   int findTargetSumWays(vector<int> &nums, int target) {
     /*
-     * DP solution. dp[i][j] = number of ways to find sum j - 1000 using only
-     * nums[:i + 1]
+     * DP solution. dp[i][j] = number of ways to find sum j + total using only
+     * nums[:i + 1]. Here, total is the sum of all nums. The possiblity of
+     * all types of sum is from -total to +total.
      *
-     * O(MN), where M = len(nums), N = 2000
+     * O(MN), where M = len(nums), N = sum of all values in nums.
+     * 21 ms Beats 54.10%
      */
     int M = nums.size();
-    int N = 2000;
-    int dp[M][N + 1];
-    for (int j = 0; j <= N; j++) {
-      if (j - 1000 == nums[0] || j - 1000 == -nums[0])
-        dp[0][j] = 1;
-    }
+    int N = 0;
+    for (int n : nums)
+      N += n;
+    if (N < target || N < -target)
+      return 0;
+    std::vector<std::vector<int>> dp(M, std::vector<int>(2 * N + 1, 0));
+    dp[0][nums[0] + N] += 1;
+    dp[0][N - nums[0]] += 1;
     for (int i = 1; i < M; i++) {
-      for (int j = 0; j <= N; j++) {
-        // j - nums[i] derives from (j - 1000) - nums[i] + 1000
+      for (int j = 0; j <= 2 * N; j++) {
+        // j - nums[i] derives from (j - N) - nums[i] + N
         // it first converts j to target value, computes a new value, and
         // finally converts the value back to index.
-        int op1 =
-            j - nums[i] >= 0 && j - nums[i] <= N ? dp[i - 1][j - nums[i]] : 0;
-        int op2 =
-            j + nums[i] >= 0 && j + nums[i] <= N ? dp[i - 1][j + nums[i]] : 0;
+        int op1 = j - nums[i] >= 0 && j - nums[i] <= 2 * N
+                      ? dp[i - 1][j - nums[i]]
+                      : 0;
+        int op2 = j + nums[i] >= 0 && j + nums[i] <= 2 * N
+                      ? dp[i - 1][j + nums[i]]
+                      : 0;
         dp[i][j] = op1 + op2;
       }
     }
-    return dp[M - 1][target + 1000];
+    return dp[M - 1][target + N];
   }
 };
 
 int main() {
-  std::vector<int> arr{10, 2, 5, 3};
-  Solution sol;
-  std::cout << sol.checkIfExist(arr) << std::endl;
+  std::vector<int> nums{1, 1, 1, 1, 1};
+  int target = 3;
+  Solution3 sol;
+  std::cout << sol.findTargetSumWays(nums, target) << std::endl;
 }
