@@ -33,6 +33,8 @@ class Solution2:
     def numberOfSubsequences(self, nums: List[int]) -> int:
         """
         We will binary search it when we try to create subsequences
+
+        TLE
         """
         products = defaultdict(list)
         N = len(nums)
@@ -50,6 +52,84 @@ class Solution2:
                 for j in range(q_lo, q_hi + 1):
                     if pairs[j][1] - r > 1:
                         res += 1
+        return res
+
+
+class Solution3:
+    def numberOfSubsequences(self, nums: List[int]) -> int:
+        """
+        This is from the hint. Instead of finding p * r == q * s, we find
+        p / q = s / r. We put all the matching (p, q) and (r, s) pairs in the
+        same array, and then use binary search to create subsequences.
+
+        It is a much better approach compared to solution2, because the binary
+        search only needs to consider s >= q + 1, and all potential s are sorted
+        already.
+
+        O(N^2logN), 9041 ms, 5.03%
+        """
+        ratios_pq = defaultdict(list)
+        ratios_rs = defaultdict(list)
+        N = len(nums)
+        for i in range(N - 2):
+            for j in range(i + 2, N):
+                g_pq = math.gcd(nums[i], nums[j])
+                ratios_pq[(nums[i] // g_pq, nums[j] // g_pq)].append((i, j))
+                g_rs = math.gcd(nums[j], nums[i])
+                ratios_rs[(nums[j] // g_rs, nums[i] // g_rs)].append((i, j))
+        res = 0
+        for ratio, pairs in ratios_pq.items():
+            for i in range(len(pairs)):
+                _, q = pairs[i]
+                r_idx = bisect_left(ratios_rs[ratio], q + 2, key=lambda tups: tups[0])
+                res += len(ratios_rs[ratio]) - r_idx
+        return res
+
+
+class Solution4:
+    def numberOfSubsequences(self, nums: List[int]) -> int:
+        """
+        Optimized version of solution 3
+
+        O(N^2logN), 4014 ms, 17.51%
+        """
+        ratios_pq = defaultdict(list)
+        ratios_rs = defaultdict(list)
+        N = len(nums)
+        for i in range(N - 2):
+            for j in range(i + 2, N):
+                g_pq = math.gcd(nums[i], nums[j])
+                ratios_pq[(nums[i] // g_pq, nums[j] // g_pq)].append(j)
+                g_rs = math.gcd(nums[j], nums[i])
+                ratios_rs[(nums[j] // g_rs, nums[i] // g_rs)].append(i)
+        res = 0
+        for ratio, qs in ratios_pq.items():
+            for q in qs:
+                r_idx = bisect_left(ratios_rs[ratio], q + 2)
+                res += len(ratios_rs[ratio]) - r_idx
+        return res
+
+
+class Solution5:
+    def numberOfSubsequences(self, nums: List[int]) -> int:
+        """
+        Further optimization
+
+        O(N^2logN), 3724 ms 19.43%
+        """
+        ratios_pq = defaultdict(list)
+        ratios_rs = defaultdict(list)
+        N = len(nums)
+        for i in range(N - 2):
+            for j in range(i + 2, N):
+                g = math.gcd(nums[i], nums[j])
+                ratios_pq[(nums[i] // g, nums[j] // g)].append(j)
+                ratios_rs[(nums[j] // g, nums[i] // g)].append(i)
+        res = 0
+        for ratio, qs in ratios_pq.items():
+            for q in qs:
+                r_idx = bisect_left(ratios_rs[ratio], q + 2)
+                res += len(ratios_rs[ratio]) - r_idx
         return res
 
 
