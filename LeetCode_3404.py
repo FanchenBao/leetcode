@@ -1,7 +1,7 @@
 # from pudb import set_trace; set_trace()
 from typing import List
 import math
-from collections import defaultdict
+from collections import defaultdict, Counter
 from bisect import bisect_left, bisect_right
 
 
@@ -130,6 +130,55 @@ class Solution5:
             for q in qs:
                 r_idx = bisect_left(ratios_rs[ratio], q + 2)
                 res += len(ratios_rs[ratio]) - r_idx
+        return res
+
+
+class Solution6:
+    def numberOfSubsequences(self, nums: List[int]) -> int:
+        """
+        This solution is from lee215
+        https://leetcode.com/problems/count-special-subsequences/solutions/6199506/java-c-python-hashmap
+
+        The key is to iterate with r. For each r position, we can iteratively
+        accumulate the count of all nums[p] / nums[q] to the left of r.
+        Then we go through s, and for each nums[r] / nums[s], we add the count
+        from nums[p] / nums[q]
+
+        The brilliance of this solution is to use r as the anchor for the
+        iteration and use counter to quickly find the number of subsequences.
+
+        O(N^2), 2220 ms, 37.42%
+        """
+        ratios: Counter = Counter()
+        N = len(nums)
+        res = 0
+        for r in range(4, N - 2):
+            q = r - 2
+            for p in range(q - 1):
+                g = math.gcd(nums[p], nums[q])
+                ratios[(nums[p] // g, nums[q] // g)] += 1
+            for s in range(r + 2, N):
+                g = math.gcd(nums[s], nums[r])
+                res += ratios[(nums[s] // g, nums[r] // g)]
+        return res
+
+
+class Solution7:
+    def numberOfSubsequences(self, nums: List[int]) -> int:
+        """
+        Same as solution6, but directly use float as key
+
+        O(N^2), 1405 ms, 79.17%
+        """
+        ratios: Counter = Counter()
+        N = len(nums)
+        res = 0
+        for r in range(4, N - 2):
+            q = r - 2
+            for p in range(q - 1):
+                ratios[(nums[p] / nums[q])] += 1
+            for s in range(r + 2, N):
+                res += ratios[nums[s] / nums[r]]
         return res
 
 
