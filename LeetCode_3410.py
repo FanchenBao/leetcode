@@ -55,19 +55,21 @@ class Solution:
         Also, the segment tree only needs to implement the update function,
         because the value we want has already been computed inside each node.
 
-        O(NlogN)
+        O(NlogN) 14780 ms, 5%
         """
         MAX = 10**12
         seg = SegTree(len(nums))
         num_to_idx = defaultdict(list)
+        has_neg = False
         for i, n in enumerate(nums):
+            has_neg |= n < 0
             seg.update(i, n)
             num_to_idx[n].append(i)
 
+        if not has_neg:  # all elements are non-negative
+            return seg.tree[0][0]
+
         res = seg.tree[0][0]
-        if seg.tree[0][0] == seg.tree[0][1]:
-            # all elements in nums are non-negative
-            return res
         # backtracking by removing each unique number, find the max subarray
         # sum, keep track of it, and add the number back
         for n, indices in num_to_idx.items():
@@ -83,7 +85,7 @@ class Solution:
 
 
 sol = Solution()
-tests = [([-3, 2, -2, -1, 3, -2, 3], 7)]
+tests = [([12, 23, -1, -30, 31, 5], 70)]
 
 for i, (nums, ans) in enumerate(tests):
     res = sol.maxSubarraySum(nums)
