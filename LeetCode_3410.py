@@ -84,6 +84,65 @@ class Solution:
         return res
 
 
+class Solution2:
+    def maxSubarraySum(self, nums: List[int]) -> int:
+        """
+        This solution is inspired by
+        https://leetcode.com/problems/maximize-subarray-sum-after-removing-all-occurrences-of-one-element/solutions/6231124/c-segment-tree-is-hard-use-dp-with-kadane-time-complexity-o-n
+
+        If we want to find the max subarray sum after removing all occurrences
+        of x, this means at some index j, we have
+
+        subsum = presum[j] - (presum[i - 1] + sum(x for x in i...j))
+
+        where presum[i - 1] + sum(x for x in i...j) is smallest.
+
+        We can use pre[x] to represent the smallest expression above. As we
+        iterate through nums, we update all pre[x]. Thus, for each nums[j],
+        we will be able to find the max subarray sum possible ending at nums[j]
+        with some x deleted.
+
+        We only delete nums[j] if it is negative. When we delete nums[j], there
+        are two scenarios to consider. First, if there is no additional
+        nums[j] between the end of pre[0] and j, then the smallest pre with
+        only one nums[j] deleted should be pre[0] + n.
+
+        However, if there have been other nums[j] before, then we have
+        pre[nums[j]]. Then the smallest pre can be pre[nums[j]] + nums[j]
+
+        We do not know which of the two scenarios is true, so we take the
+        smaller between the two.
+
+        And we designate pre[0] as the min prefix sum without deleting anything.
+        At each nums[j], we can of course also choose not to delete it.
+
+        O(N), 247 ms, 86%
+        """
+        psum = 0
+        pre = {}
+        pre[0] = 0  # without deleting anything, the starting point is 0
+        lowest = 0  # smallest pre
+        res = -10000000
+        for n in nums:
+            psum += n
+            res = max(res, psum - lowest)
+            if n < 0:
+                # option 1: delete n
+                if n not in pre:  # scenario 1: first n encountered
+                    pre[n] = pre[0] + n
+                else:  # scneario 2: n has been encountered before
+                    # We can either build on top of the previous result of
+                    # pre[n], or we check if it is possible to use pre[0],
+                    # provided that there is no other n between the end of
+                    # pre[0] and the current n.
+                    pre[n] = min(pre[0], pre[n]) + n
+                lowest = min(lowest, pre[n])
+            # option 2: do not delete n
+            pre[0] = min(pre[0], psum)
+            lowest = min(lowest, pre[0])
+        return res
+
+
 sol = Solution()
 tests = [([12, 23, -1, -30, 31, 5], 70)]
 
