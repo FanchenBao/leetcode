@@ -106,8 +106,61 @@ public:
   }
 };
 
+class Solution3 {
+public:
+  int maxTaskAssign(vector<int> &tasks, vector<int> &workers, int pills,
+                    int strength) {
+    /*
+     * This is the solution inspired by the editorial. It is very similar to
+     * Solution2 where we use binary search. However, instead of using a
+     * priority queue to always consider the currently weakest worker, we
+     * ensure that if a task requires someone to take a pill, we use the worker
+     * with the lowest strength as possible.
+     *
+     * O(N(logN)^2), 792 ms, 36.69%
+     */
+    int M = workers.size(), N = tasks.size();
+    std::sort(tasks.begin(), tasks.end());
+    std::sort(workers.begin(), workers.end());
+    int lo = 0, hi = N + 1;
+    while (lo < hi) {
+      int mid = lo + (hi - lo) / 2;
+      if (mid > M) { // not enough workers
+        hi = mid;
+        continue;
+      }
+      int pills_rem = pills;
+      std::multiset<int> ws;
+      for (int i = 0; i < mid; i++)
+        ws.insert(workers[M - mid + i]);
+      for (int i = mid - 1; i >= 0; i--) {
+        auto max_it = --ws.end();
+        if (*max_it >= tasks[i]) {
+          ws.erase(max_it);
+        } else if (pills_rem <= 0) {
+          break;
+        } else {
+          auto it = ws.lower_bound(tasks[i] - strength);
+          if (it == ws.end())
+            break;
+          ws.erase(it);
+          pills_rem--;
+        }
+      }
+      if (!ws.empty())
+        hi = mid;
+      else
+        lo = mid + 1;
+    }
+    return lo - 1;
+  }
+};
+
 int main() {
-  std::vector<int> arr{10, 2, 5, 3};
-  Solution sol;
-  std::cout << sol.checkIfExist(arr) << std::endl;
+  std::vector<int> tasks{3, 2, 1};
+  std::vector<int> workers{0, 3, 3};
+  int pills = 1;
+  int strength = 1;
+  Solution3 sol;
+  std::cout << sol.maxTaskAssign(tasks, workers, pills, strength) << std::endl;
 }
