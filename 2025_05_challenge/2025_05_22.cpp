@@ -1,4 +1,5 @@
 #include <iostream>
+#include <queue>
 #include <set>
 #include <vector>
 
@@ -6,24 +7,54 @@ using namespace std;
 
 class Solution {
 public:
-  bool checkIfExist(std::vector<int> &arr) {
+  int maxRemoval(vector<int> &nums, vector<vector<int>> &queries) {
     /*
-     * LeetCode 1346
+     * LeetCode 3362
      *
-     * First C++ in I don't even remember how many years. It will be a very
-     * slow journey to pick up the speed on not only the syntax but the
-     * general way to doing things in c++.
+     * We will use greedy + priority queue.
      *
-     * O(N), 0 ms, faster than 100.00%
+     * First, we sort queries by left. Then we iterate through each position.
+     * To reduce the number of queries used, we want a query to be as large
+     * as possible. For each number, we can iterate through queries and find
+     * all the queries that include the current number. We push the right of
+     * the query into the priority queue (max heap). Then depending on the
+     * size of the number and whether any previous queries have already covered
+     * the current number, we take the top x rights from the priority queue.
+     * Once we take the rights, we also update a linesweep array, such that
+     * we know the impact of taking these queries on future numbers.
+     *
+     * We keep doing this under all the numbers are covered.
+     *
+     * O(NlogN)
      */
-    std::set<int> seen{};
-
-    for (int v : arr) {
-      if (seen.contains(v * 2) || (v % 2 == 0 && seen.contains(v / 2)))
-        return true;
-      seen.insert(v);
+    int N = nums.size();
+    std::priority_queue<int> queue;
+    std::vector<int> linesweep(N + 1);
+    std::sort(queries.begin(), queries.end());
+    int query_count = 0, qidx = 0;
+    for (int i = 0; i < N; i++) {
+      if (i > 0)
+        linesweep[i] += linesweep[i - 1];
+      while (qidx < queries.size()) {
+        int l = queries[qidx][0], r = queries[qidx][1];
+        if (l <= i && i <= r)
+          queue.push(r);
+        else if (i < l)
+          break;
+        qidx++;
+      }
+      int needed = std::max(nums[i] - linesweep[i], 0);
+      while (!queue.empty() && needed > 0 && queue.top() >= i) {
+        linesweep[i]++;
+        linesweep[queue.top() + 1]--;
+        queue.pop();
+        needed--;
+      }
+      if (needed)
+        return -1;
+      query_count += needed;
     }
-    return false;
+    return queries.size() - query_count;
   }
 };
 
