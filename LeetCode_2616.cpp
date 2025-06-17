@@ -9,47 +9,53 @@ class Solution {
 public:
   int minimizeMax(vector<int> &nums, int p) {
     /*
-     * Here is my new idea. We produce a counter of nums. For each element
-     * that have even count, we can produce count / 2 number of pairs with
-     * min difference. For each element that has odd count, we also can
-     * produce count / 2 pairs, but we will have one left. Thus, after this
-     * round of getting zeros in difference, we will be left with just single
-     * values. Then we can go through them and pick the pair with the smallest
-     * difference.
+     * This is inspired by the hints.
+     *
+     * We will use binary search to find the min max difference. Let's call it
+     * M. For each search, we want to find the max number of pairs that we
+     * can obtain whose differences are not larger than M.
+     *
+     * If this number is larger or equal to p, that means we can make M even
+     * smaller. Otherwise, M has to be bigger. This fulfills the binary search
+     * requirements.
+     *
+     * Anothe key aspect is to realize that after we sort nums, we should always
+     * take the first adjacent pair with difference no larger than M. This can
+     * be proven the correct strategy because if we don't take the first pair,
+     * we either have to take the second pair, or the following pairs. If it
+     * is the case that we have to take the second pair, then among the first
+     * three numbers, we can only take one pair. It can either be the second
+     * pair, or the first pair. In other words, in this scenario, it does not
+     * make a difference if we take the first or second pair. We might as well
+     * take the first pair. If it is the case that we have to take the third,
+     * or fourth, ... pair, then it is always beneficial that we take the first
+     * pair.
+     *
+     * This proof guanratees that a greedy solution for binary search will
+     * work.
      *
      * O(NlogN)
      */
-    std::map<int, int> counter;
-    for (int n : nums)
-      counter[n]++;
-    for (const auto &pa : counter) {
-      int zero_pairs = pa.second / 2;
-      p -= zero_pairs;
-      if (p <= 0)
-        return 0;
-      counter[pa.first] -= zero_pairs;
-    }
-    std::vector<std::pair<int, int>> diffs;
-    int pre = -1;
-    for (const auto &pa : counter) {
-      if (pa.second == 0)
-        continue;
-      if (pre != -1) {
-        diffs.push_back({pa.first - pre, pre});
+    std::sort(nums.begin(), nums.end());
+    int lo = 0, hi = nums[nums.size() - 1] + 1;
+    while (lo < hi) {
+      int mid = lo + (hi - lo) / 2;
+      int cnt = 0, i = 0;
+      while (i < nums.size() - 1) {
+        if (nums[i + 1] - nums[i] <= mid) {
+          cnt++;
+          i += 2;
+        } else {
+          i++;
+        }
       }
-      pre = pa.first;
+      if (cnt >= p) {
+        hi = mid;
+      } else {
+        lo = mid + 1;
+      }
     }
-    std::sort(diffs.begin(), diffs.end());
-    int res = 0, pi = -1;
-    for (int i = 0; i < diffs.size() && p > 0; i++) {
-      if (pi >= 0 && diffs[pi].first + diffs[pi].second == diffs[i].second)
-        // we have used diffs[i].second already
-        continue;
-      p--;
-      res = diffs[i].first;
-      pi = i;
-    }
-    return res;
+    return lo;
   }
 };
 
