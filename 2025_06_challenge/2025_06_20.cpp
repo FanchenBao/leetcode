@@ -63,6 +63,87 @@ public:
   }
 };
 
+class Solution2 {
+public:
+  int maxDistance(string s, int k) {
+    /*
+     * This solution is inspired by the first solution in the editorial.
+     *
+     * The idea is to find the frequencies of all the directions and at each
+     * step, make change to the smaller on horizontal and smaller on vertical,
+     * if possible.
+     *
+     * Each change will make the Manhatten distance increase by 2.
+     *
+     * O(N), 127 ms, 34%
+     */
+    int nc = 0, sc = 0, wc = 0, ec = 0, res = 0;
+    for (char c : s) {
+      switch (c) {
+      case 'N':
+        nc++;
+        break;
+      case 'S':
+        sc++;
+        break;
+      case 'E':
+        ec++;
+        break;
+      case 'W':
+        wc++;
+        break;
+      default:
+        break;
+      }
+      int change_cnt_vert = std::min({nc, sc, k});
+      int change_cnt_hori = std::min({wc, ec, k - change_cnt_vert});
+      int cur = std::abs(nc - sc) + change_cnt_vert * 2 + std::abs(wc - ec) +
+                change_cnt_hori * 2;
+      res = std::max(res, cur);
+    }
+    return res;
+  }
+};
+
+class Solution3 {
+public:
+  int maxDistance(string s, int k) {
+    /*
+     * This is the second solution from the editorial. We don't even have to
+     * keep track of the count of each direction. We just keep track of the
+     * position of the point. If there are more than k directions that can be
+     * changed, the max additional Manhatten distance we can get is k * 2.
+     * Also, at each step, the max possible Manhatten distance is index plus 1.
+     * Thus, we can find the max possible Manhatten distance at each step
+     * taking into account the max additional, if possible, or limited by the
+     * max possible distance.
+     *
+     * O(N), 47 ms, 83%
+     */
+    int x = 0, y = 0, res = 0;
+    for (int i = 0; i < s.size(); i++) {
+      switch (s[i]) {
+      case 'N':
+        y++;
+        break;
+      case 'S':
+        y--;
+        break;
+      case 'E':
+        x++;
+        break;
+      case 'W':
+        x--;
+        break;
+      default:
+        break;
+      }
+      res = std::max(res, std::min(std::abs(x) + std::abs(y) + 2 * k, i + 1));
+    }
+    return res;
+  }
+};
+
 int main() {
   std::string s = "NWSE";
   int k = 1;
