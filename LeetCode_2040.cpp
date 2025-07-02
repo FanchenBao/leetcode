@@ -1,5 +1,7 @@
 #include <algorithm>
+#include <cmath>
 #include <iostream>
+#include <iterator>
 #include <set>
 #include <vector>
 
@@ -31,7 +33,7 @@ public:
      * inner logN is the binary search to find the count.
      */
     std::vector<int> pos1, pos2, neg1, neg2;
-    int zero1, zero2;
+    int zero1 = 0, zero2 = 0;
     for (int n : nums1) {
       if (n == 0)
         zero1++;
@@ -53,7 +55,7 @@ public:
     std::sort(pos2.begin(), pos2.end());
     std::sort(neg2.begin(), neg2.end());
 
-    long long lo = -100000, hi = 100001;
+    long long lo = -10000000000, hi = 10000000001;
     long long neg_prod_cnt =
         pos1.size() * neg2.size() + pos2.size() * neg1.size();
     long long pos_prod_cnt =
@@ -71,16 +73,44 @@ public:
           cnt += (long long)std::distance(pos2.begin(), it);
         }
         for (int n1 : neg1) {
+          auto it = std::upper_bound(neg2.begin(), neg2.end(), mid / n1);
+          if (it == neg2.begin())
+            break;
+          cnt += (long long)std::distance(neg2.begin(), it);
         }
       } else if (mid < 0) {
-        for (int)
+        for (int i = pos1.size() - 1; i >= 0; i--) {
+          auto it = std::lower_bound(neg2.begin(), neg2.end(),
+                                     std::ceil(-mid / (float)pos1[i]));
+          if (it == neg2.end())
+            break;
+          cnt += (long long)std::distance(it, neg2.end());
+        }
+        for (int i = pos2.size() - 1; i >= 0; i--) {
+          auto it = std::lower_bound(neg1.begin(), neg1.end(),
+                                     std::ceil(-mid / (float)pos2[i]));
+          if (it == neg1.end())
+            break;
+          cnt += (long long)std::distance(it, neg1.end());
+        }
+      } else {
+        // mid == 0
+        cnt += neg_prod_cnt + zero_prod_cnt;
+      }
+      if (cnt >= k) {
+        hi = mid;
+      } else {
+        lo = mid + 1;
       }
     }
+    return lo;
   }
 };
 
 int main() {
-  std::vector<int> arr{10, 2, 5, 3};
+  std::vector<int> nums1{-2, -1, 0, 1, 2};
+  std::vector<int> nums2{-3, -1, 2, 4, 5};
+  int k = 3;
   Solution sol;
-  std::cout << sol.checkIfExist(arr) << std::endl;
+  std::cout << sol.kthSmallestProduct(nums1, nums2, k) << std::endl;
 }
